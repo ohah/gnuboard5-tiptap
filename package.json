@@ -1,0 +1,38 @@
+{
+  "name": "monaco",
+  "version": "1.0.0",
+  "description": "monaco ts",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "webpack serve",
+    "build": "webpack"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@babel/core": "^7.16.12",
+    "@babel/preset-env": "^7.16.11",
+    "@types/jest": "^27.4.0",
+    "babel-loader": "^8.2.3",
+    "css-loader": "^6.7.1",
+    "csstype": "^3.0.10",
+    "file-loader": "^6.2.0",
+    "html-webpack-plugin": "^5.5.0",
+    "path-browserify": "^1.0.1",
+    "ts-loader": "^9.2.6",
+    "typescript": "^4.5.5",
+    "uri-js": "^4.4.1",
+    "url": "^0.11.0",
+    "webpack": "^5.68.0",
+    "webpack-cli": "^4.9.2",
+    "webpack-dev-server": "^4.7.3"
+  },
+  "dependencies": {
+    "@tiptap/core": "^2.0.0-beta.174",
+    "@tiptap/starter-kit": "^2.0.0-beta.183",
+    "fs": "^0.0.1-security",
+    "remixicon": "^2.5.0",
+    "style-loader": "^3.3.1"
+  }
+}

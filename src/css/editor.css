@@ -1,0 +1,70 @@
+:root {
+  --wrapper-border-color:rgba(221, 221, 221,1 );
+  --wrapper-border-dark-color:rgba(78, 78, 78, 1 );
+}
+.markdown-body.dark .isFocus {
+  background : rgba(180, 180, 106, 0.5) !important;
+  border-radius: 0.25rem;
+}
+.markdown-body .isFocus {
+  background : rgba(229, 229, 165, 0.5) !important;
+  border-radius: 0.25rem;
+}
+.markdown-body.dark :nth-child(1)::-webkit-scrollbar {
+  width: 14px;
+  box-shadow: 1px 0 0 0 var(--guide-color) inset;
+  background-color: rgba(30, 30, 30, 1);
+  border-left-color:rgba(57, 57, 57, 1);
+}
+.markdown-body.dark :nth-child(1):hover::-webkit-scrollbar-thumb {
+  background: rgba(121, 121, 121, 0.4);
+  opacity: 1;
+  transition: opacity .8s linear;
+}
+.markdown-body.dark :nth-child(1):hover::-webkit-scrollbar-thumb:hover {
+  background: rgba(121, 121, 121, 0.7);
+  opacity: 1;
+  transition: opacity .8s linear;
+}
+.markdown-body.dark :nth-child(1)::-webkit-scrollbar-thumb {
+  opacity: 0;
+  transition: opacity .8s linear;
+}
+.markdown-body :nth-child(1)::-webkit-scrollbar {
+  width: 14px;
+  border-left-width:1px;
+  border-left-style: solid;
+  border-left-color:rgba(220, 220, 220, 1);
+}
+.markdown-body :nth-child(1):hover::-webkit-scrollbar-thumb {
+  background: rgba(100, 100, 100, 0.4);
+  opacity: 0.4;
+  transition: opacity .8s linear;
+}
+.markdown-body :nth-child(1):hover::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 100, 100, 0.7);
+  opacity: 0.1;
+  transition: opacity .8s linear;
+}
+.markdown-body :nth-child(1)::-webkit-scrollbar-thumb {
+  opacity: 0;  
+  transition: opacity .8s linear;
+}
+.mobile-btn{border:0;background:transparent;padding:0.25rem 0.75rem;cursor: pointer;}
+.mobile-btn:focus{outline:0;border:0;}
+.mvm-wrapper .mobile-menu.menu-dark{
+  border-bottom:1px solid var(--wrapper-border-dark-color);
+}
+.mvm-wrapper .mobile-menu {
+  border-bottom:1px solid var(--wrapper-border-color);
+}
+.mvm-wrapper{
+  border:1px solid var(--wrapper-border-color)
+}
+.mvm-wrapper .menu-dark button:hover{
+  background:rgba(57, 57, 57, 1);
+}
+.mvm-wrapper .menu-dark button svg {color:#fff;}
+.mvm-wrapper .menu-dark {
+  background: #0d1117;
+}
