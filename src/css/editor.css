@@ -30,7 +30,11 @@
   background: var(--toolbar-button-hover-color);
   transition: ease-in .2s;
 }
-.tiptap-toolbar button {
+.tiptap-toolbar .popup{
+  position: absolute;
+  border-top:4px solid var(--wrapper-border-color)
+}
+.tiptap-toolbar button, .tiptap-toolbar input[type='color'] {
   width:38px;
   height:38px;
   float:left;

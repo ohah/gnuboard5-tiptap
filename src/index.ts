@@ -23,7 +23,11 @@ import Code from '@tiptap/extension-code'
 import Blockquote from '@tiptap/extension-blockquote'
 import CodeBlock from '@tiptap/extension-code-block';
 import BulletList from '@tiptap/extension-bullet-list'
+import Strike from '@tiptap/extension-strike'
+import Underline from '@tiptap/extension-underline'
 import ListItem from '@tiptap/extension-list-item'
+import { Color } from '@tiptap/extension-color'
+import TextStyle from '@tiptap/extension-text-style'
 import lowlight from 'lowlight'
 
 import "remixicon/fonts/remixicon.css";
@@ -33,13 +37,16 @@ class Editor {
   private toolbar: HTMLElement;
   private wrapper: Element;
   private body: HTMLElement;
+  private popup: HTMLElement;
   private footer: HTMLElement;
-  private toolbarButton:{name : string | "separator", icon?:string, button?:Element | undefined}[];
+  private toolbarButton:{name : string | "separator", icon?:string, button?:Element | undefined, func? : string}[];
   constructor(option: Partial<EditorOptions>) {
     this.wrapper = option.element;
     this.wrapper.classList.add('tiptap');
     this.toolbar = document.createElement("div");
     this.toolbar.className = "tiptap-toolbar";
+    this.popup = document.createElement("div");
+    this.popup.className = "popup";
     this.body = document.createElement("div");
     this.body.className = "tiptap-body";
     this.footer = document.createElement("div");
@@ -58,6 +65,8 @@ class Editor {
           document : false,
         }),
         Italic,
+        Strike,
+        Underline,
         BulletList,
         ListItem,
         Bold,
@@ -65,6 +74,10 @@ class Editor {
         Code,
         Blockquote,
         Paragraph,
+        Color.configure({
+          types : ['textStyle']
+        }),
+        TextStyle,
         Placeholder.configure({
           placeholder: ({ node }) => {
             if(node.type.name === "p") return "내용을 입력하세요";
@@ -97,9 +110,14 @@ class Editor {
     this.toolbarButton = [
       {name : 'source', icon : '<i class="ri-code-s-slash-line"></i>'},
       {name : 'separator'},
-      {name : 'bold',  icon: '<i class="ri-bold"></i>'},
-      {name : 'italic',  icon: '<i class="ri-italic"></i>'},
-      {name : 'underline',  icon: '<i class="ri-underline"></i>'},
+      {name : 'bold',  icon: '<i class="ri-bold"></i>', func : "toggleBold" },
+      {name : 'italic',  icon: '<i class="ri-italic"></i>', func : "toggleItalic"},
+      {name : 'underline',  icon: '<i class="ri-underline"></i>', func : "toggleUnderline"},
+      {name : 'strike',  icon: '<i class="ri-strikethrough"></i>', func : "toggleStrike"},
+      {name : 'bulletList',  icon: '<i class="ri-strikethrough"></i>', func : "toggleBulletList"},
+      {name : 'color',  icon: '<i class="ri-font-color"></i>', func : "setColor(e.target.value)"},
+      {name : 'separator'},
+      {name : 'link',  icon: '<i class="ri-link"></i>', func : "toggleLink({ href: 'https://example.com' })"},
     ]
     this.tiptap.on("selectionUpdate",({editor, transaction})=>{
       this.toolbarButton.forEach((toolbar)=>{
@@ -128,7 +146,7 @@ class Editor {
         toolbar.button = this.createbutton({
           name : toolbar.name,
           icon : toolbar.icon,
-          run : "toogleBold"
+          func : toolbar.func
         })
       }
       const { name, button } = toolbar;
@@ -137,20 +155,30 @@ class Editor {
       return toolbar;
     })
   }
-  createbutton({name, icon, run}:{name:string, icon:string, run : string}) {
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.dataset.name = ""
-    button.tabIndex = -1;
-    button.innerHTML = icon;
-    button.addEventListener('click', (e)=>{
-      this.tiptap.chain().toggleItalic().run();
-      console.log(this.tiptap);
-      eval("console.log(this.tiptap)")
-      // console.log('run', run("bold"), this.tiptap.commands.setBold());
-      // run()
-    },false);
-    return button;
+  createbutton({name, icon, func}:{name:string, icon:string, func : string}) {
+    if(name === 'color' && func) {
+      const input = document.createElement('input');
+      input.type = "color"
+      input.className = "toolbar-color"
+      input.addEventListener("input", (e)=>{
+        (window as any).tiptap = this.tiptap;
+        // console.log('e', e.target.value);
+        // Function(`window.tiptap.chain().${func}.run()`)();
+      }, false);
+      return input;
+    } else if(func) {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.dataset.name = ""
+      button.tabIndex = -1;
+      button.innerHTML = icon;
+      button.addEventListener('click', (e)=> {
+        (window as any).tiptap = this.tiptap;
+        Function(`window.tiptap.chain().${func}().run()`)();
+      },false);
+      return button;
+    }
+    return document.createElement('button');
   }
 }
 
