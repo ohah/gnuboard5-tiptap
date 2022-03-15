@@ -32,6 +32,20 @@ import lowlight from 'lowlight'
 
 import "remixicon/fonts/remixicon.css";
 
+declare global {
+  interface Window {
+    tiptap : Tiptap
+  }
+}
+
+interface Toolbar {
+  name:string | "separator"
+  icon?:string
+  button?:Element | undefined
+  func?:string
+  type? : "popup"
+}
+
 class Editor {
   private tiptap: Tiptap;
   private toolbar: HTMLElement;
@@ -39,7 +53,7 @@ class Editor {
   private body: HTMLElement;
   private popup: HTMLElement;
   private footer: HTMLElement;
-  private toolbarButton:{name : string | "separator", icon?:string, button?:Element | undefined, func? : string}[];
+  private toolbarButton:Toolbar[];
   constructor(option: Partial<EditorOptions>) {
     this.wrapper = option.element;
     this.wrapper.classList.add('tiptap');
@@ -47,6 +61,7 @@ class Editor {
     this.toolbar.className = "tiptap-toolbar";
     this.popup = document.createElement("div");
     this.popup.className = "popup";
+    this.popup.innerHTML = `<div class="popup-content"></div>`
     this.body = document.createElement("div");
     this.body.className = "tiptap-body";
     this.footer = document.createElement("div");
@@ -54,9 +69,16 @@ class Editor {
     this.wrapper.appendChild(this.toolbar);
     this.wrapper.appendChild(this.body);
     this.wrapper.appendChild(this.footer);
-    
+    document.body.addEventListener('click', (e)=>{
+      // this.PopupClose()
+    })
     this.Init(option);
   }
+
+  /**
+   * 
+   * @param option 에디터 초기화
+   */
   private _editorInit(option: Partial<EditorOptions>) {
     this.tiptap = new Tiptap({
       ...option,
@@ -100,11 +122,13 @@ class Editor {
         TextAlign
       ],
       element: this.body,
-      onUpdate : (e) => {
-        console.log('onUpdate', e);
-      }
     });
   }
+
+  /**
+   * Init 초기화
+   * @param option tiptap 옵션 그대롯 ㅏㅇ속
+   */
   async Init(option: Partial<EditorOptions>) {
     await this._editorInit(option)
     this.toolbarButton = [
@@ -115,7 +139,7 @@ class Editor {
       {name : 'underline',  icon: '<i class="ri-underline"></i>', func : "toggleUnderline"},
       {name : 'strike',  icon: '<i class="ri-strikethrough"></i>', func : "toggleStrike"},
       {name : 'bulletList',  icon: '<i class="ri-strikethrough"></i>', func : "toggleBulletList"},
-      {name : 'color',  icon: '<i class="ri-font-color"></i>', func : "setColor(e.target.value)"},
+      {name : 'color',  icon: '<i class="ri-font-color"></i>', func : "setColor(e.target.value)", type : "popup"},
       {name : 'separator'},
       {name : 'link',  icon: '<i class="ri-link"></i>', func : "toggleLink({ href: 'https://example.com' })"},
     ]
@@ -155,17 +179,50 @@ class Editor {
       return toolbar;
     })
   }
-  createbutton({name, icon, func}:{name:string, icon:string, func : string}) {
+
+  /**
+   * 버튼 생성
+   * @param name "icon"
+   * @param icon "icon"
+   * @param func "이벤트(function)"
+   * @returns element('이벤트')
+   */
+  createbutton({name, icon, func}:Toolbar) {
     if(name === 'color' && func) {
-      const input = document.createElement('input');
-      input.type = "color"
-      input.className = "toolbar-color"
-      input.addEventListener("input", (e)=>{
-        (window as any).tiptap = this.tiptap;
-        // console.log('e', e.target.value);
-        // Function(`window.tiptap.chain().${func}.run()`)();
-      }, false);
-      return input;
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.dataset.name = ""
+      button.tabIndex = -1;
+      button.innerHTML = icon;
+      button.addEventListener('click', (e)=> {
+        window.tiptap = this.tiptap;
+        const colors = ['#61BD6D', '#1ABC9C', '#54ACD2', '#2C82C9', '#9365B8', '#475577', '#CCCCCC', '#41A85F', '#00A885', '#3D8EB9', '#2969B0', '#553982', '#28324E', '#F7DA64', '#FBA026', '#FBA026', '#EB6B56', '#E25041', '#A38F84', '#EFEFEF', '#FFFFFF', '#FAC51C', '#F37934', '#D14841', '#B8312F', '#7C706B', '#D1D5D8', undefined];
+        const colorElement = document.createElement('div');
+        colors.map(color => {
+          const span = document.createElement('span');
+          span.className = "set-color";
+          span.style.background = color;
+          if(this.tiptap.isActive('textStyle', { color: color })) {
+            span.innerHTML = `<i class="ri-check-fill selected"></i>`;
+          }
+          span.addEventListener("click", (e)=>{
+            this.tiptap.commands.setColor(color);
+            this.PopupClose();
+          }, false)
+          colorElement.appendChild(span);
+        });
+        const inputWrapper = document.createElement('div');
+        inputWrapper.className = "color-input-wrapper";
+        inputWrapper.innerHTML = `<input type="text" value="${window.tiptap.getAttributes('textStyle').color ? window.tiptap.getAttributes('textStyle').color : ""}" /> <button class="popup-confirm">확인</button>`
+        colorElement.appendChild(inputWrapper);
+        this.Popup({
+          parent : button,
+          content : colorElement,
+          width : 224,
+        });
+        // Function(`window.tiptap.chain().${func}().run()`)();
+      },false);
+      return button;
     } else if(func) {
       const button = document.createElement('button');
       button.type = 'button';
@@ -173,12 +230,49 @@ class Editor {
       button.tabIndex = -1;
       button.innerHTML = icon;
       button.addEventListener('click', (e)=> {
-        (window as any).tiptap = this.tiptap;
+        window.tiptap = this.tiptap;
         Function(`window.tiptap.chain().${func}().run()`)();
       },false);
       return button;
+    } else {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.dataset.name = ""
+      button.tabIndex = -1;
+      button.innerHTML = icon;
+      return button;
     }
     return document.createElement('button');
+  }
+
+  /**
+   * 팝업 열기
+   * @param parent 부모 엘리먼트
+   * @param content 내용. Element, string
+   * @param width : 크기 number
+   */
+  private Popup ({parent, content, width}:{parent:Element, content:Element | string, width:number}) {
+    const { top, left, height} = parent.getBoundingClientRect();
+    console.log('실행');
+    this.popup.innerHTML = '';
+    if(typeof content === 'string') {
+      this.popup.innerHTML = content;
+    } else {
+      this.popup.appendChild(content);
+    }
+    this.popup.style.top = `${top + height}px`;
+    this.popup.style.left = `${left - (width / 2)}px`;
+    this.popup.style.width = `${width}px`;
+    this.popup.style.height = `auto`;
+    // this.popup.style.display = "block";
+    this.toolbar.appendChild(this.popup);
+  }
+
+  /**
+   * 팝업 지우기
+   */
+  private PopupClose() {
+    this.toolbar.removeChild(this.popup);
   }
 }
 

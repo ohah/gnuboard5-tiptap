@@ -5,6 +5,7 @@
   --toolbar-button-hover-color:rgba(235, 235, 235, 1);
   --toolbar-separator-color:rgba(235, 235, 235, 1);
   --toolbar-active-color:rgba(30, 136, 229, 1);
+  --toolbar-background-color:rgba(255, 255, 255, 1);
 }
 .tiptap-toolbar button i {
   display: block;
@@ -26,13 +27,102 @@
   width:1px;
   margin:2px;
 }
+.tiptap-toolbar .color-input-wrapper input:focus{
+  outline:0;
+}
+.tiptap-toolbar .color-input-wrapper input{
+  font-size:14px;
+  width:calc(100% - 40px);
+  border:0;
+  border-bottom:1px solid #bdbdbd;
+  background-color: transparent;
+  padding: 6px 5px 2px;
+  color:#000;
+  margin: 0 0 1px;
+}
+.tiptap-toolbar .color-input-wrapper button:hover{
+  background-color: #166dba;
+}
+.tiptap-toolbar .color-input-wrapper button{
+  background-color: #1e88e5;
+  color: #fff !important;
+  border-radius: 2px;
+  background-clip: padding-box;
+  font-size: 13px;
+  height: 32px;
+  margin-right:5px;
+}
+.tiptap-toolbar .color-input-wrapper input{margin-left:5px;font-weight: 800;}
+.tiptap-toolbar .color-input-wrapper input, .tiptap-toolbar .color-input-wrapper button {
+  display: inline-block;
+}
+.tiptap-toolbar .color-input-wrapper {
+  display: inline-flex;
+  padding:5px 0;
+}
 .tiptap-toolbar button:hover{
   background: var(--toolbar-button-hover-color);
   transition: ease-in .2s;
 }
-.tiptap-toolbar .popup{
+.tiptap-toolbar .popup{ 
+  background-color: var(--toolbar-background-color);
+}
+.tiptap-toolbar .popup .popup-content{
+  position: relative;
+  height:100%;
+  width:100%;
+}
+.tiptap-toolbar .set-color:hover{
+  border:1px solid #000;
+  box-sizing: border-box;
+}
+.tiptap-toolbar .set-color .selected {
+  color: #fff;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 32px;
   position: absolute;
-  border-top:4px solid var(--wrapper-border-color)
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  text-align: center;
+  cursor: default;
+}
+.tiptap-toolbar .set-color {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+  float:left;
+  width:32px;
+  height:32px;
+  position: relative;
+  z-index: 1;
+}
+.tiptap-toolbar .popup::before {
+  display: block;
+  content:'';
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-bottom: 5px solid #222;
+  position: absolute;
+  top: -9px;
+  left: 50%;
+  margin-left: -5px;
+  display: inline-block;
+}
+.tiptap-toolbar .popup {
+  position: absolute;
+  border-top:4px solid var(--wrapper-border-color);
+  margin-top:5px;
+  text-align: left;
+  z-index: 2147483635;
+  border:0;
+  border-top:5px solid var(--toolbar-border-top-color);
+  box-sizing: border-box;
+  box-shadow:0 1px 3px rgb(0 0 0 / 12%), 0 1px 1px 1px rgb(0 0 0 / 16%);
 }
 .tiptap-toolbar button, .tiptap-toolbar input[type='color'] {
   width:38px;
