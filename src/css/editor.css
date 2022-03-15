@@ -1,70 +1,129 @@
 :root {
   --wrapper-border-color:rgba(221, 221, 221,1 );
-  --wrapper-border-dark-color:rgba(78, 78, 78, 1 );
+  --wrapper-border-dark-color:rgba(78, 78, 78, 1);
+  --toolbar-border-top-color:rgba(34, 34, 34, 1);
+  --toolbar-button-hover-color:rgba(235, 235, 235, 1);
+  --toolbar-separator-color:rgba(235, 235, 235, 1);
+  --toolbar-active-color:rgba(30, 136, 229, 1);
 }
-.markdown-body.dark .isFocus {
-  background : rgba(180, 180, 106, 0.5) !important;
-  border-radius: 0.25rem;
+.tiptap-toolbar button i {
+  display: block;
+  font-size:14px;
+  width:14px;
+  margin:12px;
+  text-align: center;
+  float:none;
 }
-.markdown-body .isFocus {
-  background : rgba(229, 229, 165, 0.5) !important;
-  border-radius: 0.25rem;
+.tiptap .is-active{
+  color:var(--toolbar-active-color);
 }
-.markdown-body.dark :nth-child(1)::-webkit-scrollbar {
-  width: 14px;
-  box-shadow: 1px 0 0 0 var(--guide-color) inset;
-  background-color: rgba(30, 30, 30, 1);
-  border-left-color:rgba(57, 57, 57, 1);
+.tiptap-separator{
+  background: var(--toolbar-separator-color);
+  display: block;
+  vertical-align: top;
+  float:left;
+  height:34px;
+  width:1px;
+  margin:2px;
 }
-.markdown-body.dark :nth-child(1):hover::-webkit-scrollbar-thumb {
-  background: rgba(121, 121, 121, 0.4);
-  opacity: 1;
-  transition: opacity .8s linear;
+.tiptap-toolbar button:hover{
+  background: var(--toolbar-button-hover-color);
+  transition: ease-in .2s;
 }
-.markdown-body.dark :nth-child(1):hover::-webkit-scrollbar-thumb:hover {
-  background: rgba(121, 121, 121, 0.7);
-  opacity: 1;
-  transition: opacity .8s linear;
+.tiptap-toolbar button {
+  width:38px;
+  height:38px;
+  float:left;
+  padding:0;
+  box-sizing: border-box;
+  border:0;
+  background:transparent;
+  cursor: pointer;
+  margin:0 2px;
 }
-.markdown-body.dark :nth-child(1)::-webkit-scrollbar-thumb {
-  opacity: 0;
-  transition: opacity .8s linear;
+.tiptap-toolbar {
+  border-top:5px solid var(--toolbar-border-top-color);
+  box-shadow:0 1px 3px rgb(0 0 0 / 12%), 0 1px 1px 1px rgb(0 0 0 / 16%);
 }
-.markdown-body :nth-child(1)::-webkit-scrollbar {
-  width: 14px;
-  border-left-width:1px;
-  border-left-style: solid;
-  border-left-color:rgba(220, 220, 220, 1);
+.tiptap-toolbar:after{
+  clear: both;
+  content:'';
+  display: block;
 }
-.markdown-body :nth-child(1):hover::-webkit-scrollbar-thumb {
-  background: rgba(100, 100, 100, 0.4);
-  opacity: 0.4;
-  transition: opacity .8s linear;
+.tiptap-body {
+  border-top:0;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 12%), 0 1px 1px 1px rgb(0 0 0 / 16%);
 }
-.markdown-body :nth-child(1):hover::-webkit-scrollbar-thumb:hover {
-  background: rgba(100, 100, 100, 0.7);
-  opacity: 0.1;
-  transition: opacity .8s linear;
+.editor-body{
+  padding:16px;
 }
-.markdown-body :nth-child(1)::-webkit-scrollbar-thumb {
-  opacity: 0;  
-  transition: opacity .8s linear;
+.ProseMirror:focus{outline:none}
+
+/* Basic editor styles */
+.ProseMirror > * + * {
+  margin-top: 0.75em;
 }
-.mobile-btn{border:0;background:transparent;padding:0.25rem 0.75rem;cursor: pointer;}
-.mobile-btn:focus{outline:0;border:0;}
-.mvm-wrapper .mobile-menu.menu-dark{
-  border-bottom:1px solid var(--wrapper-border-dark-color);
+.ProseMirror pre {
+  background: #0d0d0d;
+  color: #fff;
+  font-family: "JetBrainsMono", monospace;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
 }
-.mvm-wrapper .mobile-menu {
-  border-bottom:1px solid var(--wrapper-border-color);
+.ProseMirror pre code {
+  color: inherit;
+  padding: 0;
+  background: none;
+  font-size: 0.8rem;
 }
-.mvm-wrapper{
-  border:1px solid var(--wrapper-border-color)
+.ProseMirror pre .hljs-comment,
+.ProseMirror pre .hljs-quote {
+  color: #616161;
 }
-.mvm-wrapper .menu-dark button:hover{
-  background:rgba(57, 57, 57, 1);
+.ProseMirror pre .hljs-variable,
+.ProseMirror pre .hljs-template-variable,
+.ProseMirror pre .hljs-attribute,
+.ProseMirror pre .hljs-tag,
+.ProseMirror pre .hljs-name,
+.ProseMirror pre .hljs-regexp,
+.ProseMirror pre .hljs-link,
+.ProseMirror pre .hljs-name,
+.ProseMirror pre .hljs-selector-id,
+.ProseMirror pre .hljs-selector-class {
+  color: #f98181;
 }
-.mvm-wrapper .menu-dark button svg {color:#fff;}
-.mvm-wrapper .menu-dark {
-  background: #0d1117;
+.ProseMirror pre .hljs-number,
+.ProseMirror pre .hljs-meta,
+.ProseMirror pre .hljs-built_in,
+.ProseMirror pre .hljs-builtin-name,
+.ProseMirror pre .hljs-literal,
+.ProseMirror pre .hljs-type,
+.ProseMirror pre .hljs-params {
+  color: #fbbc88;
+}
+.ProseMirror pre .hljs-string,
+.ProseMirror pre .hljs-symbol,
+.ProseMirror pre .hljs-bullet {
+  color: #b9f18d;
+}
+.ProseMirror pre .hljs-title,
+.ProseMirror pre .hljs-section {
+  color: #faf594;
+}
+.ProseMirror pre .hljs-keyword,
+.ProseMirror pre .hljs-selector-tag {
+  color: #70cff8;
+}
+.ProseMirror pre .hljs-emphasis {
+  font-style: italic;
+}
+.ProseMirror pre .hljs-strong {
+  font-weight: 700;
+}
+.ProseMirror pre{
+  background: #0d0d0d;
+  color: #fff;
+  font-family: JetBrainsMono,monospace;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
 }
