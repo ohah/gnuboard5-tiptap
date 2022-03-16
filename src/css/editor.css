@@ -3,6 +3,7 @@
   --wrapper-border-dark-color:rgba(78, 78, 78, 1);
   --toolbar-border-top-color:rgba(34, 34, 34, 1);
   --toolbar-button-hover-color:rgba(235, 235, 235, 1);
+  --toolbar-button-color:rgba(30, 136, 229, 1);
   --toolbar-separator-color:rgba(235, 235, 235, 1);
   --toolbar-active-color:rgba(30, 136, 229, 1);
   --toolbar-background-color:rgba(255, 255, 255, 1);
@@ -40,11 +41,39 @@
   color:#000;
   margin: 0 0 1px;
 }
+.tiptap-toolbar .justify-align .dropdown i {
+  margin:12px;
+}
+.tiptap-toolbar .justify-align i {
+  margin:6px;
+}
+.tiptap-toolbar button .dropdown {
+  /* display:none; */
+  visibility:hidden;
+  position: absolute;
+  background-color: #fff;
+  border:1px solid var(--toolbar-separator-color)
+}
+.tiptap-toolbar button:focus .dropdown{
+  display:block;
+  visibility:visible;
+  margin-top:5px;
+}
+.tiptap-toolbar .justify-align::after {
+  content :"\ea4d";
+  position: absolute;
+  top:50%;
+  right:4px;
+  transform: translateY(-50%);
+  font-family: 'remixicon' !important;
+  font-style: normal;
+  -webkit-font-smoothing: antialiased;
+}
 .tiptap-toolbar .color-input-wrapper button:hover{
   background-color: #166dba;
 }
 .tiptap-toolbar .color-input-wrapper button{
-  background-color: #1e88e5;
+  background-color: var(--toolbar-button-color);
   color: #fff !important;
   border-radius: 2px;
   background-clip: padding-box;
@@ -71,6 +100,38 @@
   position: relative;
   height:100%;
   width:100%;
+}
+.tiptap-toolbar  .popup-content .popup-input input:focus {
+  outline:none;
+}
+.tiptap-toolbar .popup .popup-content .popup-input input {
+  width: 100%;
+  margin: 0 0 1px;
+  border: 0;
+  border-bottom: solid 1px #bdbdbd;
+  color: #222;
+  font-size: 14px;
+  padding: 6px 0 2px;
+  background: rgba(0,0,0,0);
+  position: relative;
+  z-index: 2;
+  box-sizing: border-box;
+}
+.tiptap-toolbar .popup .popup-content .popup-button{
+  text-align: right;
+}
+.tiptap-toolbar .popup .popup-content .popup-button button{
+  float:inherit;
+  color:var(--toolbar-button-color)
+}
+.tiptap-toolbar .popup .popup-content .popup-checkbox input[type="checkbox"] {
+  margin:0;
+  padding:0;
+}
+.tiptap-toolbar .popup .popup-content .popup-checkbox label{cursor: pointer;font-size:14px;}
+.tiptap-toolbar .popup .popup-content .popup-input, .tiptap-toolbar .popup .popup-content .popup-checkbox, .tiptap-toolbar .popup .popup-content .popup-button  {
+  position: relative;
+  padding: 8px 8px;
 }
 .tiptap-toolbar .set-color:hover{
   border:1px solid #000;
@@ -113,7 +174,21 @@
   margin-left: -5px;
   display: inline-block;
 }
+.tiptap-toolbar .popup-input input:focus + [data-popup='link']{
+  display:block;
+  visibility:visible;
+  margin-top:5px;
+}
+.tiptap-toolbar button:focus .popup, .tiptap-toolbar input:focus + .popup  {
+  display:block;
+  visibility:visible;
+  margin-top:5px;
+}
 .tiptap-toolbar .popup {
+  /* visibility:hidden; */
+  /* transform: translateX(-50%); */
+  /* left: 50%; */
+  left:0;
   position: absolute;
   border-top:4px solid var(--wrapper-border-color);
   margin-top:5px;
@@ -124,8 +199,9 @@
   box-sizing: border-box;
   box-shadow:0 1px 3px rgb(0 0 0 / 12%), 0 1px 1px 1px rgb(0 0 0 / 16%);
 }
-.tiptap-toolbar button, .tiptap-toolbar input[type='color'] {
+.tiptap-toolbar button {
   width:38px;
+  position: relative;
   height:38px;
   float:left;
   padding:0;
@@ -133,6 +209,7 @@
   border:0;
   background:transparent;
   cursor: pointer;
+  z-index: 1000;
   margin:0 2px;
 }
 .tiptap-toolbar {

@@ -17,6 +17,7 @@ import TaskItem from '@tiptap/extension-task-item'
 import CharacterCount from '@tiptap/extension-character-count'
 import Placeholder from '@tiptap/extension-placeholder'
 import Italic from '@tiptap/extension-italic'
+import Link from '@tiptap/extension-link'
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
 import Bold from '@tiptap/extension-bold'
 import Code from '@tiptap/extension-code'
@@ -38,8 +39,11 @@ declare global {
   }
 }
 
+/**
+ * @param name "color(글색)" | "justify(정렬)"
+ */
 interface Toolbar {
-  name:string | "separator"
+  name:string | "separator" | "color" | "justify"
   icon?:string
   button?:Element | undefined
   func?:string
@@ -61,7 +65,6 @@ class Editor {
     this.toolbar.className = "tiptap-toolbar";
     this.popup = document.createElement("div");
     this.popup.className = "popup";
-    this.popup.innerHTML = `<div class="popup-content"></div>`
     this.body = document.createElement("div");
     this.body.className = "tiptap-body";
     this.footer = document.createElement("div");
@@ -69,9 +72,23 @@ class Editor {
     this.wrapper.appendChild(this.toolbar);
     this.wrapper.appendChild(this.body);
     this.wrapper.appendChild(this.footer);
-    document.body.addEventListener('click', (e)=>{
-      // this.PopupClose()
-    })
+    /* 
+    * 팝업창 외의 다른 영역 클릭시 닫기 이벤트.
+    * 팝업의 모든 요소에 popup-child 클래스를 넣음.
+    */
+    let popupOver = false;
+    this.wrapper.addEventListener('mouseover', (e)=>{
+      if((e.target as Element).classList.contains('popup-child')){
+        popupOver = true;
+      } else {
+        popupOver = false;
+      }
+    });
+    document.body.addEventListener("click", (e)=>{
+      if(popupOver === false) {
+        this.PopupClose();
+      }
+    }, false);
     this.Init(option);
   }
 
@@ -95,6 +112,7 @@ class Editor {
         CodeBlock,
         Code,
         Blockquote,
+        Link,
         Paragraph,
         Color.configure({
           types : ['textStyle']
@@ -119,7 +137,9 @@ class Editor {
         TableHeader,
         Image,
         Dropcursor,
-        TextAlign
+        TextAlign.configure({
+          types: ['heading', 'paragraph'],
+        })
       ],
       element: this.body,
     });
@@ -138,10 +158,16 @@ class Editor {
       {name : 'italic',  icon: '<i class="ri-italic"></i>', func : "toggleItalic"},
       {name : 'underline',  icon: '<i class="ri-underline"></i>', func : "toggleUnderline"},
       {name : 'strike',  icon: '<i class="ri-strikethrough"></i>', func : "toggleStrike"},
-      {name : 'bulletList',  icon: '<i class="ri-strikethrough"></i>', func : "toggleBulletList"},
       {name : 'color',  icon: '<i class="ri-font-color"></i>', func : "setColor(e.target.value)", type : "popup"},
       {name : 'separator'},
       {name : 'link',  icon: '<i class="ri-link"></i>', func : "toggleLink({ href: 'https://example.com' })"},
+      {name : 'image',  icon: '<i class="ri-image-add-fill"></i>', func : "toggleLink({ href: 'https://example.com' })"},
+      {name : 'video',  icon: '<i class="ri-video-add-fill"></i>', func : "toggleLink({ href: 'https://example.com' })"},
+      {name : 'table',  icon: '<i class="ri-table-2"></i>', func : "toggleLink({ href: 'https://example.com' })"},
+      {name : 'separator'},
+      {name : 'bulletList',  icon: '<i class="ri-list-unordered"></i>', func : "toggleBulletList"},
+      {name : 'bulletList',  icon: '<i class="ri-list-ordered"></i>', func : "toggleBulletList"},
+      {name : 'justify',  icon: '<i class="ri-align-justify"></i>'},
     ]
     this.tiptap.on("selectionUpdate",({editor, transaction})=>{
       this.toolbarButton.forEach((toolbar)=>{
@@ -188,39 +214,139 @@ class Editor {
    * @returns element('이벤트')
    */
   createbutton({name, icon, func}:Toolbar) {
-    if(name === 'color' && func) {
+    if(name === "justify") {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = "justify-align"
+      button.tabIndex = -1;
+      button.innerHTML = [
+        `${icon}`,
+      ].join('');
+      const dropdown = document.createElement('div');
+      dropdown.className = "dropdown";
+      ['left', 'center', 'right', 'justify'].map((align)=>{
+        const alignBtn = document.createElement('button');
+        alignBtn.dataset.align = align;
+        const i = document.createElement('i');
+        i.className = `ri-align-${align}`;
+        alignBtn.appendChild(i);
+        // alignBtn.innerHTML = `<i class="ri-align-${align}"></i>`;
+        alignBtn.addEventListener('click', (e)=> {
+          e.preventDefault();
+          e.stopPropagation();
+          this.tiptap.chain().focus().setTextAlign(align).run();
+        }, false);
+        dropdown.appendChild(alignBtn);
+      });
+      button.addEventListener('click', (e)=>{
+        // this.tiptap.chain().focus().setTextAlign('center').run()
+      });
+      button.appendChild(dropdown);
+      return button;
+    } else if(name === 'link') {
+      const button = document.createElement('button');
+      button.type = 'button';
+      // button.className = "justify-align"
+      button.tabIndex = -1;
+      button.innerHTML = [
+        `${icon}`,
+      ].join('');
+     
+      button.addEventListener('click', (e)=>{
+        e.stopPropagation();
+        const popup = document.createElement('div');
+        popup.className = "popup-content link-popup";
+        popup.dataset.popup = 'link';
+        // popup.style.width = "300px";
+        popup.innerHTML = [
+          `<div class="popup-content popup-child">`,
+            `<div class="popup-input popup-child">`,
+              `<input type="text" class="popup-child" name="url" placeholder="URL" />`,
+            `</div>`,
+            `<div class="popup-input popup-child">`,
+              `<input type="text" class="popup-child" name="text" placeholder="텍스트" />`,
+            `</div>`,
+            `<div class="popup-checkbox popup-child">`,
+              `<label class="popup-child">`,
+                `<input type="checkbox" class="popup-child" name="target"/>`,
+                `<span class="popup-child"> 새 탭에서 열기 </span>`,
+              `</label>`,
+            `</div>`,
+            `<div class="popup-button popup-child">`,
+              `<button type="button" class="popup-child"> 삽입 </button>`,
+            `</div>`,
+          `</div>`
+        ].join('');
+        popup.querySelector('button').addEventListener("click", (e)=> {
+          const url = (popup.querySelector('input[name=url]') as HTMLInputElement).value;
+          const text = (popup.querySelector('input[name=text]') as HTMLInputElement).value;
+          const target = popup.querySelector('input[name=target]:checked');
+          if(!url) {
+            alert('URL을 입력하세요');
+            return false;
+          }
+          if(!text) {
+            alert('텍스트를 입력하세요');
+            return false;
+          }
+          this.tiptap.chain().setLink({href:url, target : target ? "_blank" : "" }).insertContent(text).run();
+          this.tiptap.chain().focus();
+          this.PopupClose();
+          console.log(e);
+        }, false)
+        // button.appendChild(popup);
+        this.Popup({
+          parent : button,
+          content : popup,
+          width : 300,
+        });
+      }, false)
+      return button;
+    } else if(name === 'color' && func) {
       const button = document.createElement('button');
       button.type = 'button';
       button.dataset.name = ""
       button.tabIndex = -1;
       button.innerHTML = icon;
       button.addEventListener('click', (e)=> {
+        e.stopPropagation();
         window.tiptap = this.tiptap;
         const colors = ['#61BD6D', '#1ABC9C', '#54ACD2', '#2C82C9', '#9365B8', '#475577', '#CCCCCC', '#41A85F', '#00A885', '#3D8EB9', '#2969B0', '#553982', '#28324E', '#F7DA64', '#FBA026', '#FBA026', '#EB6B56', '#E25041', '#A38F84', '#EFEFEF', '#FFFFFF', '#FAC51C', '#F37934', '#D14841', '#B8312F', '#7C706B', '#D1D5D8', undefined];
         const colorElement = document.createElement('div');
         colors.map(color => {
           const span = document.createElement('span');
-          span.className = "set-color";
+          span.className = "set-color popup-child";
           span.style.background = color;
           if(this.tiptap.isActive('textStyle', { color: color })) {
             span.innerHTML = `<i class="ri-check-fill selected"></i>`;
           }
           span.addEventListener("click", (e)=>{
             this.tiptap.commands.setColor(color);
+            this.tiptap.chain().focus();
             this.PopupClose();
           }, false)
           colorElement.appendChild(span);
         });
         const inputWrapper = document.createElement('div');
-        inputWrapper.className = "color-input-wrapper";
-        inputWrapper.innerHTML = `<input type="text" value="${window.tiptap.getAttributes('textStyle').color ? window.tiptap.getAttributes('textStyle').color : ""}" /> <button class="popup-confirm">확인</button>`
+        inputWrapper.className = "color-input-wrapper popup-child";
+        inputWrapper.innerHTML = `<input type="text" value="${window.tiptap.getAttributes('textStyle').color ? window.tiptap.getAttributes('textStyle').color : ""}" /> <button type="button" class="popup-confirm popup-child">확인</button>`
         colorElement.appendChild(inputWrapper);
+        inputWrapper.querySelector('button').addEventListener('click', (e)=>{
+          e.stopPropagation();
+          const regx = /^#([a-fA-F0-9]{6}|[a-fA-F0-9]{3})$/
+          if(regx.test(inputWrapper.querySelector('input').value)) {
+            console.log('color', inputWrapper.querySelector('input').value);
+            this.tiptap.commands.setColor(inputWrapper.querySelector('input').value);
+            this.PopupClose();
+          } else {
+            alert('잘못 된 형식의 값입니다');
+          }
+        })
         this.Popup({
           parent : button,
           content : colorElement,
           width : 224,
         });
-        // Function(`window.tiptap.chain().${func}().run()`)();
       },false);
       return button;
     } else if(func) {
@@ -230,8 +356,10 @@ class Editor {
       button.tabIndex = -1;
       button.innerHTML = icon;
       button.addEventListener('click', (e)=> {
+        e.stopPropagation();
         window.tiptap = this.tiptap;
         Function(`window.tiptap.chain().${func}().run()`)();
+        this.tiptap.chain().focus();
       },false);
       return button;
     } else {
@@ -261,7 +389,7 @@ class Editor {
       this.popup.appendChild(content);
     }
     this.popup.style.top = `${top + height}px`;
-    this.popup.style.left = `${left - (width / 2)}px`;
+    this.popup.style.left = `${left - (width / 2) + 17}px`;
     this.popup.style.width = `${width}px`;
     this.popup.style.height = `auto`;
     // this.popup.style.display = "block";
