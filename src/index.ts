@@ -29,9 +29,13 @@ import Underline from '@tiptap/extension-underline'
 import ListItem from '@tiptap/extension-list-item'
 import { Color } from '@tiptap/extension-color'
 import TextStyle from '@tiptap/extension-text-style'
+import HardBreak from '@tiptap/extension-hard-break'
+import History from '@tiptap/extension-history';
+
 import lowlight from 'lowlight'
 
 import "remixicon/fonts/remixicon.css";
+import Iframe from "./extensions/Iframe";
 
 declare global {
   interface Window {
@@ -43,7 +47,7 @@ declare global {
  * @param name "color(글색)" | "justify(정렬)"
  */
 interface Toolbar {
-  name:string | "separator" | "color" | "justify"
+  name:string | "separator" | "color" | "justify" | "video" | "link"
   icon?:string
   button?:Element | undefined
   func?:string
@@ -112,7 +116,10 @@ class Editor {
         CodeBlock,
         Code,
         Blockquote,
+        History,
         Link,
+        Iframe,
+        HardBreak,
         Paragraph,
         Color.configure({
           types : ['textStyle']
@@ -242,6 +249,85 @@ class Editor {
         // this.tiptap.chain().focus().setTextAlign('center').run()
       });
       button.appendChild(dropdown);
+      return button;
+    } else if(name === 'video') {
+      const button = document.createElement('button');
+      button.type = 'button';
+      // button.className = "justify-align"
+      button.tabIndex = -1;
+      button.innerHTML = [
+        `${icon}`,
+      ].join('');
+     
+      button.addEventListener('click', (e)=>{
+        e.stopPropagation();
+        const popup = document.createElement('div');
+        popup.className = "popup-content link-popup";
+        popup.dataset.popup = 'link';
+        // popup.style.width = "300px";
+        popup.innerHTML = [
+          `<div class="popup-content popup-child">`,
+            `<div class="popup-tab popup-child">`,
+              `<button type="button" class="popup-child" data-tab="1"><i class="ri-links-line popup-child"></i></button>`,
+              `<button type="button" class="popup-child" data-tab="2"><i class="ri-code-s-slash-fill popup-child"></i></button>`,
+            `</div>`,
+            `<div class="popup-input popup-child tab" data-tab="1" style="display:block">`,
+              `<input type="text" class="popup-child" name="url" placeholder="동영상 URL 붙여넣기" />`,
+            `</div>`,
+            `<div class="popup-input popup-child tab" data-tab="2" style="display:none">`,
+              `<textarea placeholder="임베디드코드" name="embed" class="popup-child embed-textarea"></textarea>`,
+            `</div>`,
+            `<div class="popup-button popup-child">`,
+              `<button type="button" class="confirm popup-child"> 삽입 </button>`,
+            `</div>`,
+          `</div>`
+        ].join('');
+        const tabBtn = popup.querySelectorAll('button[data-tab]');
+        tabBtn.forEach((btn:HTMLElement) => {
+          btn.addEventListener('click', (e)=>{
+            const Idx = btn.dataset.tab;
+            console.log(Idx);
+            popup.querySelectorAll(`.popup-input[data-tab]`).forEach(element => {
+              element.setAttribute("style", "display:none");
+            });
+            const tab = popup.querySelector(`.popup-input[data-tab="${Idx}"]`)
+            tab.setAttribute("style", "display:block");
+          }, false);
+        });
+        popup.querySelector('button.confirm').addEventListener("click", (e)=> {
+          e.preventDefault();
+          console.log(popup.querySelector(`.popup-input[data-tab="1"]`).getAttribute("style"));
+          if(popup.querySelector(`.popup-input[data-tab="1"]`).getAttribute("style") === "display:block") {
+            console.log('URL');
+            const url = (popup.querySelector('input[name=url]') as HTMLInputElement).value;
+            if(!url) {
+              alert('URL을 입력하세요');
+              return false;
+            }
+            this.tiptap.chain().focus().setIframe({ src: url }).run()
+            return false;
+          } else {
+            const text = (popup.querySelector('textarea[name=embed]') as HTMLTextAreaElement).value;
+            if(!text) {
+              alert('텍스트를 입력하세요');
+              return false;
+            }
+            this.tiptap.chain().focus().insertContent(text).run();
+            console.log('임베디드');
+          }
+          
+          // this.tiptap.chain().setLink({href:url, target : target ? "_blank" : "" }).insertContent(text).run();
+          // this.tiptap.chain().focus();
+          // this.PopupClose();
+          // console.log(e);
+        }, false)
+        // button.appendChild(popup);
+        this.Popup({
+          parent : button,
+          content : popup,
+          width : 300,
+        });
+      }, false)
       return button;
     } else if(name === 'link') {
       const button = document.createElement('button');
