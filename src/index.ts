@@ -27,6 +27,7 @@ import BulletList from '@tiptap/extension-bullet-list'
 import Strike from '@tiptap/extension-strike'
 import Underline from '@tiptap/extension-underline'
 import ListItem from '@tiptap/extension-list-item'
+import OrderedList from '@tiptap/extension-ordered-list'
 import { Color } from '@tiptap/extension-color'
 import TextStyle from '@tiptap/extension-text-style'
 import HardBreak from '@tiptap/extension-hard-break'
@@ -48,12 +49,16 @@ declare global {
  */
 interface Toolbar {
   name:string | "separator" | "color" | "justify" | "video" | "link"
+  tooltip?:string
   icon?:string
   button?:Element | undefined
   func?:string
   type? : "popup"
 }
 
+interface editorOptions extends Partial<EditorOptions>{
+  upload? : string
+}
 class Editor {
   private tiptap: Tiptap;
   private toolbar: HTMLElement;
@@ -62,7 +67,7 @@ class Editor {
   private popup: HTMLElement;
   private footer: HTMLElement;
   private toolbarButton:Toolbar[];
-  constructor(option: Partial<EditorOptions>) {
+  constructor(option: editorOptions) {
     this.wrapper = option.element;
     this.wrapper.classList.add('tiptap');
     this.toolbar = document.createElement("div");
@@ -100,7 +105,7 @@ class Editor {
    * 
    * @param option 에디터 초기화
    */
-  private _editorInit(option: Partial<EditorOptions>) {
+  private _editorInit(option: editorOptions) {
     this.tiptap = new Tiptap({
       ...option,
       extensions : [
@@ -112,6 +117,7 @@ class Editor {
         Underline,
         BulletList,
         ListItem,
+        OrderedList,
         Bold,
         CodeBlock,
         Code,
@@ -159,22 +165,23 @@ class Editor {
   async Init(option: Partial<EditorOptions>) {
     await this._editorInit(option)
     this.toolbarButton = [
-      {name : 'source', icon : '<i class="ri-code-s-slash-line"></i>'},
+      {name : 'source', tooltip: "소스보기", icon : '<i class="ri-code-s-slash-line"></i>'},
       {name : 'separator'},
-      {name : 'bold',  icon: '<i class="ri-bold"></i>', func : "toggleBold" },
-      {name : 'italic',  icon: '<i class="ri-italic"></i>', func : "toggleItalic"},
-      {name : 'underline',  icon: '<i class="ri-underline"></i>', func : "toggleUnderline"},
-      {name : 'strike',  icon: '<i class="ri-strikethrough"></i>', func : "toggleStrike"},
-      {name : 'color',  icon: '<i class="ri-font-color"></i>', func : "setColor(e.target.value)", type : "popup"},
+      {name : 'bold', tooltip: "굵게", icon: '<i class="ri-bold"></i>', func : "toggleBold" },
+      {name : 'italic', tooltip : "기울임", icon: '<i class="ri-italic"></i>', func : "toggleItalic"},
+      {name : 'underline', tooltip : "밑줄", icon: '<i class="ri-underline"></i>', func : "toggleUnderline"},
+      {name : 'strike',  tooltip : "밑줄", icon: '<i class="ri-strikethrough"></i>', func : "toggleStrike"},
+      {name : 'color',  tooltip : "글 색깔", icon: '<i class="ri-font-color"></i>', func : "setColor(e.target.value)", type : "popup"},
       {name : 'separator'},
-      {name : 'link',  icon: '<i class="ri-link"></i>', func : "toggleLink({ href: 'https://example.com' })"},
-      {name : 'image',  icon: '<i class="ri-image-add-fill"></i>', func : "toggleLink({ href: 'https://example.com' })"},
-      {name : 'video',  icon: '<i class="ri-video-add-fill"></i>', func : "toggleLink({ href: 'https://example.com' })"},
-      {name : 'table',  icon: '<i class="ri-table-2"></i>', func : "toggleLink({ href: 'https://example.com' })"},
+      {name : 'link',  tooltip : "링크", icon: '<i class="ri-link"></i>'},
+      {name : 'image',  tooltip : "이미지", icon: '<i class="ri-image-add-fill"></i>'},
+      {name : 'video',  tooltip : "비디오", icon: '<i class="ri-video-add-fill"></i>'},
+      {name : 'table',  tooltip : "표", icon: '<i class="ri-table-2"></i>'},
       {name : 'separator'},
-      {name : 'bulletList',  icon: '<i class="ri-list-unordered"></i>', func : "toggleBulletList"},
-      {name : 'bulletList',  icon: '<i class="ri-list-ordered"></i>', func : "toggleBulletList"},
-      {name : 'justify',  icon: '<i class="ri-align-justify"></i>'},
+      {name : 'bulletList',  tooltip : "목록", icon: '<i class="ri-list-unordered"></i>', func : "toggleBulletList"},
+      {name : 'orderedList',  tooltip : "목록(번호)", icon: '<i class="ri-list-ordered"></i>', func : "toggleOrderedList"},
+      {name : 'taskList',  tooltip : "목록(체크)", icon: '<i class="ri-task-line"></i>', func : "toggleTaskList"},
+      {name : 'justify',  tooltip : "정렬", icon: '<i class="ri-align-justify"></i>'},
     ]
     this.tiptap.on("selectionUpdate",({editor, transaction})=>{
       this.toolbarButton.forEach((toolbar)=>{
@@ -186,6 +193,7 @@ class Editor {
       })
     })
     this.tiptap.on("update",({editor, transaction})=>{
+      console.log("?");
       this.toolbarButton.forEach((toolbar)=>{
         if(editor.isActive(toolbar.name) === true) {
           toolbar.button.classList.add('is-active');
@@ -203,7 +211,8 @@ class Editor {
         toolbar.button = this.createbutton({
           name : toolbar.name,
           icon : toolbar.icon,
-          func : toolbar.func
+          func : toolbar.func,
+          tooltip : toolbar.tooltip
         })
       }
       const { name, button } = toolbar;
@@ -220,7 +229,7 @@ class Editor {
    * @param func "이벤트(function)"
    * @returns element('이벤트')
    */
-  createbutton({name, icon, func}:Toolbar) {
+  createbutton({name, icon, tooltip, func}:Toolbar) {
     if(name === "justify") {
       const button = document.createElement('button');
       button.type = 'button';
@@ -253,7 +262,7 @@ class Editor {
     } else if(name === 'video') {
       const button = document.createElement('button');
       button.type = 'button';
-      // button.className = "justify-align"
+      button.dataset.tooltip = tooltip ? tooltip : ""
       button.tabIndex = -1;
       button.innerHTML = [
         `${icon}`,
@@ -326,10 +335,93 @@ class Editor {
         });
       }, false)
       return button;
+    } else if(name == "image") {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.dataset.tooltip = tooltip ? tooltip : ""
+      button.tabIndex = -1;
+      button.innerHTML = [
+        `${icon}`,
+      ].join('');
+     
+      button.addEventListener('click', (e)=>{
+        e.stopPropagation();
+        const popup = document.createElement('div');
+        popup.className = "popup-content link-popup";
+        popup.dataset.popup = 'link';
+        // popup.style.width = "300px";
+        popup.innerHTML = [
+          `<div class="popup-content popup-child">`,
+            `<div class="popup-tab popup-child">`,
+              `<button type="button" class="popup-child" data-tab="1"><i class="ri-upload-fill popup-child"></i></button>`,
+              `<button type="button" class="popup-child" data-tab="2"><i class="ri-links-fill popup-child"></i></button>`,
+            `</div>`,
+            `<div class="popup-input popup-child tab" data-tab="1" style="display:block">`,
+              `<label for="tiptap-image-upload" class="popup-child tiptap-drag-and-drop-upload">`,
+                `<input id="tiptap-image iptap-image-upload" class="popup-child" type="file" accept="image/jpeg, image/jpg, image/png, image/gif, image/webp" tabindex="-1">`,
+              `</label>`,
+            `</div>`,
+            `<div class="popup-input popup-child tab" data-tab="2" style="display:none">`,
+              `<input type="text" autocomplete="off" class="popup-child" name="url" placeholder="이미지 URL 붙여넣기" />`,
+              `<div class="popup-button popup-child">`,
+                `<button type="button" class="confirm popup-child"> 삽입 </button>`,
+              `</div>`,
+            `</div>`,
+          `</div>`
+        ].join('');
+        const fileInput = popup.querySelector('input[type="file"]') as HTMLInputElement;
+        fileInput.addEventListener("change", (e)=>{
+          const file = (e.target as any).files[0];
+          if(file) {
+          }          
+        }, false)
+        const tabBtn = popup.querySelectorAll('button[data-tab]');
+        tabBtn.forEach((btn:HTMLElement) => {
+          btn.addEventListener('click', (e)=>{
+            const Idx = btn.dataset.tab;
+            popup.querySelectorAll(`.popup-input[data-tab]`).forEach(element => {
+              element.setAttribute("style", "display:none");
+            });
+            const tab = popup.querySelector(`.popup-input[data-tab="${Idx}"]`)
+            tab.setAttribute("style", "display:block");
+          }, false);
+        });
+        popup.querySelector('button.confirm').addEventListener("click", (e)=> {
+          e.preventDefault();
+          if(popup.querySelector(`.popup-input[data-tab="1"]`).getAttribute("style") === "display:block") {
+            const url = (popup.querySelector('input[name=url]') as HTMLInputElement).value;
+            if(!url) {
+              alert('URL을 입력하세요');
+              return false;
+            }
+            this.tiptap.chain().focus().setIframe({ src: url }).run()
+            return false;
+          } else {
+            const text = (popup.querySelector('textarea[name=embed]') as HTMLTextAreaElement).value;
+            if(!text) {
+              alert('텍스트를 입력하세요');
+              return false;
+            }
+            this.tiptap.chain().focus().insertContent(text).run();
+          }
+          
+          // this.tiptap.chain().setLink({href:url, target : target ? "_blank" : "" }).insertContent(text).run();
+          // this.tiptap.chain().focus();
+          // this.PopupClose();
+          // console.log(e);
+        }, false)
+        // button.appendChild(popup);
+        this.Popup({
+          parent : button,
+          content : popup,
+          width : 300,
+        });
+      }, false)
+      return button;
     } else if(name === 'link') {
       const button = document.createElement('button');
       button.type = 'button';
-      // button.className = "justify-align"
+      button.dataset.tooltip = tooltip ? tooltip : ""
       button.tabIndex = -1;
       button.innerHTML = [
         `${icon}`,
@@ -388,7 +480,7 @@ class Editor {
     } else if(name === 'color' && func) {
       const button = document.createElement('button');
       button.type = 'button';
-      button.dataset.name = ""
+      button.dataset.tooltip = tooltip ? tooltip : ""
       button.tabIndex = -1;
       button.innerHTML = icon;
       button.addEventListener('click', (e)=> {
@@ -435,7 +527,7 @@ class Editor {
     } else if(func) {
       const button = document.createElement('button');
       button.type = 'button';
-      button.dataset.name = ""
+      button.dataset.tooltip = tooltip ? tooltip : ""
       button.tabIndex = -1;
       button.innerHTML = icon;
       button.addEventListener('click', (e)=> {
@@ -448,7 +540,7 @@ class Editor {
     } else {
       const button = document.createElement('button');
       button.type = 'button';
-      button.dataset.name = ""
+      button.dataset.tooltip = tooltip ? "tooltip" : ""
       button.tabIndex = -1;
       button.innerHTML = icon;
       return button;
@@ -483,7 +575,11 @@ class Editor {
    * 팝업 지우기
    */
   private PopupClose() {
-    this.toolbar.removeChild(this.popup);
+    try {
+      this.toolbar.removeChild(this.popup);
+    }catch(e){ 
+
+    }
   }
 }
 

@@ -341,3 +341,67 @@
   width: 100%;
   height: 100%;
 }
+[data-tooltip]{
+  position: relative;
+}
+[data-tooltip]:hover::before {
+  content: " ";
+  position: absolute;
+  top: calc(100% - 8.5px);
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: transparent transparent black transparent;
+}
+
+[data-tooltip]:hover::after{
+  content:attr(data-tooltip);
+  display:block;
+  background-color: black;
+  color: #fff;
+  text-align: center;
+  padding: 5px 5px;
+  position: absolute;
+  white-space: nowrap;
+  left: 50%;
+  transform: translateX(-50%);
+  border-radius: 6px;
+}
+.tiptap-toolbar .tiptap-drag-and-drop-upload input[type="file"] {
+  cursor: pointer;
+  position: absolute !important;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 500% !important; 
+  height: 100%;
+  margin: 0;
+  font-size: 400px;
+  border:0 !important;
+}
+.tiptap-toolbar .tiptap-drag-and-drop-upload::after{
+  display:block;
+  width:100%;
+  position: absolute;
+  top:50%;
+  left:50%;
+  transform: translate(-50%, -50%);
+  content:"이미지를 드래그&드롭\a(또는 클릭)";
+  white-space: pre;
+}
+.tiptap-toolbar .tiptap-drag-and-drop-upload:hover{
+  border-color:var(--toolbar-active-color)
+}
+.tiptap-toolbar .tiptap-drag-and-drop-upload {
+  display: block;
+  border: dashed 2px #bdbdbd;
+  padding:35px 0;
+  position: relative;
+  font-size: 14px;
+  letter-spacing: 1px;
+  line-height: 140%;
+  text-align: center;
+  width:95%;
+  margin:0 auto;
+}
