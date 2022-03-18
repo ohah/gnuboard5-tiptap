@@ -30,6 +30,7 @@
 }
 .tiptap-toolbar .color-input-wrapper input:focus{
   outline:0;
+  border-bottom: solid 2px #1e88e5;
 }
 .tiptap-toolbar .color-input-wrapper input{
   font-size:14px;
@@ -105,12 +106,6 @@
 .tiptap-toolbar .popup .tab {
   display: none;
 }
-.tiptap-toolbar  .popup-content .popup-input input:focus {
-  outline:none;
-}
-.tiptap-toolbar .popup .popup-content .popup-input textarea:focus{
-  outline:none;
-}
 .tiptap-toolbar .popup .popup-content .popup-input textarea{
   height:80px;
   resize: none;
@@ -127,6 +122,14 @@
   position: relative;
   z-index: 2;
   box-sizing: border-box;
+}
+.tiptap-toolbar  .popup-content .popup-input input:focus {
+  border-bottom: solid 2px #1e88e5;
+  outline:none;
+}
+.tiptap-toolbar .popup .popup-content .popup-input textarea:focus{
+  outline:none;
+  border-bottom: solid 2px #1e88e5;
 }
 .tiptap-toolbar .popup .popup-content .popup-button{
   text-align: right;

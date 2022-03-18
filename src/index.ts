@@ -272,10 +272,10 @@ class Editor {
               `<button type="button" class="popup-child" data-tab="2"><i class="ri-code-s-slash-fill popup-child"></i></button>`,
             `</div>`,
             `<div class="popup-input popup-child tab" data-tab="1" style="display:block">`,
-              `<input type="text" class="popup-child" name="url" placeholder="동영상 URL 붙여넣기" />`,
+              `<input type="text" autocomplete="off" class="popup-child" name="url" placeholder="동영상 URL 붙여넣기" />`,
             `</div>`,
             `<div class="popup-input popup-child tab" data-tab="2" style="display:none">`,
-              `<textarea placeholder="임베디드코드" name="embed" class="popup-child embed-textarea"></textarea>`,
+              `<textarea placeholder="임베디드코드" autocomplete="off" name="embed" class="popup-child embed-textarea"></textarea>`,
             `</div>`,
             `<div class="popup-button popup-child">`,
               `<button type="button" class="confirm popup-child"> 삽입 </button>`,
@@ -296,9 +296,7 @@ class Editor {
         });
         popup.querySelector('button.confirm').addEventListener("click", (e)=> {
           e.preventDefault();
-          console.log(popup.querySelector(`.popup-input[data-tab="1"]`).getAttribute("style"));
           if(popup.querySelector(`.popup-input[data-tab="1"]`).getAttribute("style") === "display:block") {
-            console.log('URL');
             const url = (popup.querySelector('input[name=url]') as HTMLInputElement).value;
             if(!url) {
               alert('URL을 입력하세요');
@@ -313,7 +311,6 @@ class Editor {
               return false;
             }
             this.tiptap.chain().focus().insertContent(text).run();
-            console.log('임베디드');
           }
           
           // this.tiptap.chain().setLink({href:url, target : target ? "_blank" : "" }).insertContent(text).run();
@@ -347,10 +344,10 @@ class Editor {
         popup.innerHTML = [
           `<div class="popup-content popup-child">`,
             `<div class="popup-input popup-child">`,
-              `<input type="text" class="popup-child" name="url" placeholder="URL" />`,
+              `<input type="text" autocomplete="off" class="popup-child" name="url" placeholder="URL" />`,
             `</div>`,
             `<div class="popup-input popup-child">`,
-              `<input type="text" class="popup-child" name="text" placeholder="텍스트" />`,
+              `<input type="text" autocomplete="off" class="popup-child" name="text" placeholder="텍스트" />`,
             `</div>`,
             `<div class="popup-checkbox popup-child">`,
               `<label class="popup-child">`,
