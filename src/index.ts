@@ -10,7 +10,7 @@ import Table from '@tiptap/extension-table'
 import TableRow from '@tiptap/extension-table-row'
 import TableCell from '@tiptap/extension-table-cell'
 import TableHeader from '@tiptap/extension-table-header'
-import Image from '@tiptap/extension-image'
+// import Image from '@tiptap/extension-image'
 import Dropcursor from '@tiptap/extension-dropcursor'
 import TaskList from '@tiptap/extension-task-list'
 import TaskItem from '@tiptap/extension-task-item'
@@ -36,6 +36,7 @@ import History from '@tiptap/extension-history';
 import lowlight from 'lowlight'
 
 import "remixicon/fonts/remixicon.css";
+import Image from './extensions/ResizeImage'
 import Iframe from "./extensions/Iframe";
 
 declare global {
@@ -53,11 +54,11 @@ interface Toolbar {
   icon?:string
   button?:Element | undefined
   func?:string
-  type? : "popup"
+  type?:"popup"
 }
 
 interface editorOptions extends Partial<EditorOptions>{
-  upload? : string
+  ImageUpload? : (e:FileList) => Promise<any> | undefined
 }
 class Editor {
   private tiptap: Tiptap;
@@ -67,8 +68,10 @@ class Editor {
   private popup: HTMLElement;
   private footer: HTMLElement;
   private toolbarButton:Toolbar[];
+  private option:editorOptions;
   constructor(option: editorOptions) {
     this.wrapper = option.element;
+    this.option = option;
     this.wrapper.classList.add('tiptap');
     this.toolbar = document.createElement("div");
     this.toolbar.className = "tiptap-toolbar";
@@ -136,7 +139,7 @@ class Editor {
             if(node.type.name === "p") return "내용을 입력하세요";
           }
         }),
-        // CodeBlockLowlight.configure({lowlight}),
+        CodeBlockLowlight.configure({lowlight}),
         Text,
         Heading,
         TaskItem,
@@ -192,8 +195,7 @@ class Editor {
         }
       })
     })
-    this.tiptap.on("update",({editor, transaction})=>{
-      console.log("?");
+    this.tiptap.on("update",({editor, transaction})=>{      
       this.toolbarButton.forEach((toolbar)=>{
         if(editor.isActive(toolbar.name) === true) {
           toolbar.button.classList.add('is-active');
@@ -216,7 +218,6 @@ class Editor {
         })
       }
       const { name, button } = toolbar;
-      console.log(button);
       this.toolbar.appendChild(button);
       return toolbar;
     })
@@ -371,8 +372,14 @@ class Editor {
         ].join('');
         const fileInput = popup.querySelector('input[type="file"]') as HTMLInputElement;
         fileInput.addEventListener("change", (e)=>{
-          const file = (e.target as any).files[0];
-          if(file) {
+          const files = (e.target as HTMLInputElement).files;
+          if(files && this.option.ImageUpload) {
+            this.option.ImageUpload(files).then((row)=> {
+              if(row.url) {
+                this.tiptap.commands.setImage({src: `${row.url}`})
+              }
+              // console.log('files', files);
+            });
           }          
         }, false)
         const tabBtn = popup.querySelectorAll('button[data-tab]');
@@ -586,12 +593,17 @@ class Editor {
 (function () {
   new Editor({
     element: document.querySelector("#container"),
-    content: `<p>Hello World!</p><p><strong>ere</strong></p><pre><code class="language-javascript">console.log('test')</code></pre>`,
+    content: `<img src="https://i.ytimg.com/vi/-6Zjub7CH4k/hqdefault.jpg?sqp=-oaymwEbCKgBEF5IVfKriqkDDggBFQAAiEIYAXABwAEG&rs=AOn4CLAM-HI1vYmSnVudZ8D9osES4dn5dw" /><p>Hello World!</p><p><strong>ere</strong></p><pre><code class="language-javascript">console.log('test')</code></pre>`,
     editorProps : {
       attributes : {
         class:"editor-body",
         style : "height:300px;overflow-y:auto"
       }
+    },
+    ImageUpload : function(files) {
+      return new Promise(function(resolve, reject) {
+        resolve({url:"https://i.ytimg.com/vi/-6Zjub7CH4k/hqdefault.jpg?sqp=-oaymwEbCKgBEF5IVfKriqkDDggBFQAAiEIYAXABwAEG&rs=AOn4CLAM-HI1vYmSnVudZ8D9osES4dn5dw"});
+      });
     }
   });
 })();

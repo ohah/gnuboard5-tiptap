@@ -405,3 +405,77 @@
   width:95%;
   margin:0 auto;
 }
+ul[data-type=taskList] li{display:flex;align-items: center;}
+ul[data-type=taskList] li > label{ flex:0 0 auto; margin-right:0.5rem;}
+ul[data-type=taskList] li input[type="checkbox"] {
+  font-size: inherit;
+  font-family: inherit;
+  color: #000;
+  margin: 0.1rem;
+  border: 1px solid black;
+  border-radius: 0.3rem;
+  padding: 0.1rem 0.4rem;
+  background: white;
+  accent-color: black;
+}
+ul[data-type=taskList]{margin:0;padding:0;list-style: none;}
+ul[data-type=taskList]{margin:0;padding:0;border:0;}
+.ProseMirror img.ProseMirror-selectednode{
+  outline:3px solid #68cef8;
+}
+.drag-image-resize {
+  position: relative;
+  display: inline-block;
+  border:1px dashed #32B5FE;
+  transform: none;
+}
+.drag-image-resize .dir-circle {
+  border-radius: 10px;
+  width: 6px;
+  height: 6px;
+  margin-left: -4px;
+  margin-top: -4px;
+  background-color: #32B5FE;
+  border: 1px solid #32B5FE;
+  position: absolute;
+}
+.dir-lt{
+  cursor: nwse-resize;
+  top:0;
+  left:0;
+}
+.dir-ct{
+  cursor: n-resize;
+  top:0;
+  left:50%;
+}
+.dir-rt{
+  cursor: ne-resize;
+  top:0;
+  left:100%;
+}
+.dir-rc{
+  cursor: e-resize;
+  top:50%;
+  left:100%;
+}
+.dir-rb{
+  cursor: se-resize;
+  top:100%;
+  left:100%;
+}
+.dir-cb{
+  cursor: s-resize;
+  top:100%;
+  left:50%;
+}
+.dir-lb{
+  cursor: sw-resize;
+  top:100%;
+  left:0%;
+}
+.dir-lc{
+  cursor: w-resize;
+  top:50%;
+  left:0;
+}
