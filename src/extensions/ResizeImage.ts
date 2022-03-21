@@ -35,21 +35,7 @@ export const Image = Node.create<ImageOptions>({
   },
 
   addNodeView() {
-    console.log('this', this);
-    // const parentAttr = {
-    //   ...HTMLAttributes,
-    //   class : "drag-image-resize",
-    // }
-    // 'div', mergeAttributes(this.options.HTMLAttributes, parentAttr), 
-    // ['div', {class : 'dir-circle dir-lt'}],
-    // ['div', {class : 'dir-circle dir-ct'}],
-    // ['div', {class : 'dir-circle dir-rt'}],
-    // ['div', {class : 'dir-circle dir-rc'}],
-    // ['div', {class : 'dir-circle dir-rb'}],
-    // ['div', {class : 'dir-circle dir-cb'}],
-    // ['div', {class : 'dir-circle dir-lb'}],
-    // ['div', {class : 'dir-circle dir-lc'}],
-    return ({HTMLAttributes}) => {
+    return ({HTMLAttributes, node}) => {
       const controlBar = [
         {element : document.createElement('div'), name : 'lt', x : true, y : true},
         {element : document.createElement('div'), name : 'ct', x : false, y : true},
@@ -60,37 +46,38 @@ export const Image = Node.create<ImageOptions>({
         {element : document.createElement('div'), name : 'lb', x : true, y : true},
         {element : document.createElement('div'), name : 'lc', x : true, y : false},
       ]
-      const { height, width, src } = mergeAttributes(this.options.HTMLAttributes, HTMLAttributes);
+      const { height, width, src } = mergeAttributes(HTMLAttributes, this.options.HTMLAttributes);
       const container = document.createElement('div');
-      container.className = "drag-image-resize";
       container.setAttribute("style", `height:${height}px;width:${width}px;`);
-      let selected;
       container.addEventListener('click', (e)=>{
-        console.log(e);
-        controlBar.forEach((row)=>{
+        container.className = "drag-image-resize";
+        controlBar.map((row)=>{
+          row.element = row.element.cloneNode(true) as HTMLDivElement;
+          const resize = row.element;
+          console.log('등록', resize);
+          resize.className = `dir-circle dir-${row.name}`;
+          resize.addEventListener("drag", (e:MouseEvent)=>{
+            if(row.x === true) {
+              container.style.width = `${e.x}px`;
+              img.style.width = `${e.x}px`;
+              HTMLAttributes.width = e.x;
+              this.options.HTMLAttributes.width = e.x;
+              node.attrs.width = e.x;
+            }
+            if(row.y) {
+              container.style.height = `${e.y}px`;
+              img.style.height = `${e.y}px`;
+              HTMLAttributes.height = e.y;
+              this.options.HTMLAttributes.height = e.y;
+              node.attrs.height = e.y;
+            }
+          },false)
+            // container.append(resize);
           container.append(row.element);
         })
       })
       const img = document.createElement('img');
-      controlBar.forEach(pos => {
-        const resize = pos.element;
-        resize.className = `dir-circle dir-${pos.name}`;
-        resize.addEventListener("drag", (e)=>{
-          if(pos.x === true) {
-            container.style.width = `${e.x}px`;
-            img.style.width = `${e.x}px`;
-            HTMLAttributes.width = e.x;
-            this.options.HTMLAttributes.width = e.x;
-          }
-          if(pos.y) {
-            container.style.height = `${e.y}px`;
-            img.style.height = `${e.y}px`;
-            HTMLAttributes.height = e.y;
-            this.options.HTMLAttributes.height = e.y;
-          }
-        })
-        // container.append(resize);
-      });
+      
       img.setAttribute("style", `height:${height}px;width:${width}px;`);
       img.setAttribute("src", src);
       container.append(img);
@@ -101,19 +88,15 @@ export const Image = Node.create<ImageOptions>({
   },
  
   onTransaction() {
-    // console.log('onTra')
+    const container = this.editor.view.dom.querySelector('.drag-image-resize');
+    if(container) {
+      container.className = "";
+      const dragOptions = this.editor.view.dom.querySelectorAll(".dir-circle");
+      dragOptions.forEach(element => {
+        container.removeChild(element);  
+      });
+    }
   },
-  onSelectionUpdate() {
-    // console.log('onselect')
-  },
-  onUpdate() {
-    // console.log("?")
-  },
-  
-  onBlur() {
-    // console.log('blur');
-  },
-
   inline() {
     return this.options.inline
   },
@@ -122,7 +105,6 @@ export const Image = Node.create<ImageOptions>({
     return this.options.inline ? 'inline' : 'block'
   },
 
-  
   draggable: true,
 
   addAttributes() {
@@ -151,12 +133,13 @@ export const Image = Node.create<ImageOptions>({
         tag: this.options.allowBase64
           ? 'img[src]'
           : 'img[src]:not([src^="data:"])',
+        attrs : mergeAttributes(this.options.HTMLAttributes),
       },
     ]
   },
 
-  renderHTML({ HTMLAttributes }) {
-    return ['img', mergeAttributes(HTMLAttributes, this.options.HTMLAttributes)]
+  renderHTML({ HTMLAttributes,node }) {
+    return ['img', mergeAttributes(this.options.HTMLAttributes, node.attrs)]
   },
 
   addCommands() {

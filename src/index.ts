@@ -69,6 +69,7 @@ class Editor {
   private footer: HTMLElement;
   private toolbarButton:Toolbar[];
   private option:editorOptions;
+  private source:HTMLTextAreaElement;
   constructor(option: editorOptions) {
     this.wrapper = option.element;
     this.option = option;
@@ -81,8 +82,14 @@ class Editor {
     this.body.className = "tiptap-body";
     this.footer = document.createElement("div");
     this.footer.className = "tiptap-container";
+    this.source = document.createElement("textarea");
+    this.source.className = `tiptap-source ${option.editorProps.attributes["class"]}`;
+    // this.source.setAttribute("style", option.editorProps.attributes["style"]);
+    // this.source.style.display = "none";
+    // this.body.style.display = "block";
     this.wrapper.appendChild(this.toolbar);
     this.wrapper.appendChild(this.body);
+    this.body.appendChild(this.source);
     this.wrapper.appendChild(this.footer);
     /* 
     * 팝업창 외의 다른 영역 클릭시 닫기 이벤트.
@@ -260,7 +267,34 @@ class Editor {
       });
       button.appendChild(dropdown);
       return button;
-    } else if(name === 'video') {
+    } else if(name === "source") {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.dataset.tooltip = tooltip ? tooltip : ""
+      button.tabIndex = -1;
+      button.innerHTML = [
+        `${icon}`,
+      ].join('');
+      button.addEventListener('click', (e) => {
+        e.preventDefault();
+        // this.body.appendChild(this.source);
+        if((this.tiptap.view.dom as HTMLElement).style.visibility !== "hidden") {
+          this.source.style.visibility = "visible";
+          (this.tiptap.view.dom as HTMLElement).style.visibility = "hidden";
+          this.source.value = this.tiptap.getHTML();
+          this.source.focus();
+        } else {
+          // this.tiptap.commands.setContent(this.source.value);
+          this.source.style.visibility = "hidden";
+          (this.tiptap.view.dom as HTMLElement).style.visibility = "visible";
+          console.log(this.source.value);
+          this.tiptap.chain().setContent(this.source.value).focus().run();
+        }
+        // this.tiptap.destroy();
+      }, false)
+      
+      return button;
+    }else if(name === 'video') {
       const button = document.createElement('button');
       button.type = 'button';
       button.dataset.tooltip = tooltip ? tooltip : ""
@@ -336,7 +370,47 @@ class Editor {
         });
       }, false)
       return button;
-    } else if(name == "image") {
+    } else if(name === 'table') {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.dataset.tooltip = tooltip ? tooltip : ""
+      button.tabIndex = -1;
+      button.innerHTML = [
+        `${icon}`,
+      ].join('');
+      button.addEventListener('click', (e)=>{
+        e.stopPropagation();
+        const popup = document.createElement('div');
+        popup.className = "popup-content link-popup";
+        popup.dataset.popup = 'link';
+        // popup.style.width = "300px";
+        popup.innerHTML = [
+          `<div class="popup-content popup-child">`,
+            `<div class="popup-input popup-child">`,
+              `<div class="popup-child">`,
+                `<label class="popup-child"> 행 </label>`,
+                `<input type="number" autocomplete="off" class="popup-child" name="row" placeholder="행" />`,
+              `</div>`,
+              `<div>`,
+                `<label class="class="popup-child"> 열 </label>`,
+                `<input type="number" autocomplete="off" class="popup-child" name="col" placeholder="열" />`,
+              `</div>`,
+            `</div>`,
+            `<div class="popup-button popup-child">`,
+              `<button type="button" class="confirm popup-child"> 삽입 </button>`,
+            `</div>`,
+          `</div>`
+        ].join('');
+       
+        // button.appendChild(popup);
+        this.Popup({
+          parent : button,
+          content : popup,
+          width : 300,
+        });
+      }, false)
+      return button;
+    } else if(name === "image") {
       const button = document.createElement('button');
       button.type = 'button';
       button.dataset.tooltip = tooltip ? tooltip : ""
@@ -411,11 +485,6 @@ class Editor {
             }
             this.tiptap.chain().focus().insertContent(text).run();
           }
-          
-          // this.tiptap.chain().setLink({href:url, target : target ? "_blank" : "" }).insertContent(text).run();
-          // this.tiptap.chain().focus();
-          // this.PopupClose();
-          // console.log(e);
         }, false)
         // button.appendChild(popup);
         this.Popup({
@@ -593,7 +662,7 @@ class Editor {
 (function () {
   new Editor({
     element: document.querySelector("#container"),
-    content: `<img src="https://i.ytimg.com/vi/-6Zjub7CH4k/hqdefault.jpg?sqp=-oaymwEbCKgBEF5IVfKriqkDDggBFQAAiEIYAXABwAEG&rs=AOn4CLAM-HI1vYmSnVudZ8D9osES4dn5dw" /><p>Hello World!</p><p><strong>ere</strong></p><pre><code class="language-javascript">console.log('test')</code></pre>`,
+    content: `<img src="https://i.ytimg.com/vi/-6Zjub7CH4k/hqdefault.jpg" /><p>Hello World!</p><p><strong>ere</strong></p><pre><code class="language-javascript">console.log('test')</code></pre>`,
     editorProps : {
       attributes : {
         class:"editor-body",
@@ -602,7 +671,7 @@ class Editor {
     },
     ImageUpload : function(files) {
       return new Promise(function(resolve, reject) {
-        resolve({url:"https://i.ytimg.com/vi/-6Zjub7CH4k/hqdefault.jpg?sqp=-oaymwEbCKgBEF5IVfKriqkDDggBFQAAiEIYAXABwAEG&rs=AOn4CLAM-HI1vYmSnVudZ8D9osES4dn5dw"});
+        resolve({url:"https://i.ytimg.com/vi/-6Zjub7CH4k/hqdefault.jpg"});
       });
     }
   });
