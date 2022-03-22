@@ -54,7 +54,6 @@ export const Image = Node.create<ImageOptions>({
         controlBar.map((row)=>{
           row.element = row.element.cloneNode(true) as HTMLDivElement;
           const resize = row.element;
-          console.log('등록', resize);
           resize.className = `dir-circle dir-${row.name}`;
           resize.addEventListener("drag", (e:MouseEvent)=>{
             if(row.x === true) {
@@ -139,7 +138,7 @@ export const Image = Node.create<ImageOptions>({
   },
 
   renderHTML({ HTMLAttributes,node }) {
-    return ['img', mergeAttributes(this.options.HTMLAttributes, node.attrs)]
+    return ['img', mergeAttributes(this.options.HTMLAttributes, HTMLAttributes, node.attrs)]
   },
 
   addCommands() {

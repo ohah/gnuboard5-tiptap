@@ -10,6 +10,7 @@ import Table from '@tiptap/extension-table'
 import TableRow from '@tiptap/extension-table-row'
 import TableCell from '@tiptap/extension-table-cell'
 import TableHeader from '@tiptap/extension-table-header'
+import Gapcursor from '@tiptap/extension-gapcursor'
 // import Image from '@tiptap/extension-image'
 import Dropcursor from '@tiptap/extension-dropcursor'
 import TaskList from '@tiptap/extension-task-list'
@@ -32,12 +33,11 @@ import { Color } from '@tiptap/extension-color'
 import TextStyle from '@tiptap/extension-text-style'
 import HardBreak from '@tiptap/extension-hard-break'
 import History from '@tiptap/extension-history';
-
 import lowlight from 'lowlight'
-
 import "remixicon/fonts/remixicon.css";
 import Image from './extensions/ResizeImage'
 import Iframe from "./extensions/Iframe";
+import { CustomBlockExtension } from "./extensions/CustomCodeBlock";
 
 declare global {
   interface Window {
@@ -60,6 +60,7 @@ interface Toolbar {
 interface editorOptions extends Partial<EditorOptions>{
   ImageUpload? : (e:FileList) => Promise<any> | undefined
 }
+
 class Editor {
   private tiptap: Tiptap;
   private toolbar: HTMLElement;
@@ -126,6 +127,7 @@ class Editor {
         Strike,
         Underline,
         BulletList,
+        Gapcursor,
         ListItem,
         OrderedList,
         Bold,
@@ -146,7 +148,7 @@ class Editor {
             if(node.type.name === "p") return "내용을 입력하세요";
           }
         }),
-        CodeBlockLowlight.configure({lowlight}),
+        CustomBlockExtension,
         Text,
         Heading,
         TaskItem,
@@ -154,7 +156,9 @@ class Editor {
         CharacterCount,
         Highlight,
         Typography,
-        Table,
+        Table.configure({
+          resizable : true,
+        }),
         TableRow,
         TableCell,
         TableHeader,
@@ -175,8 +179,8 @@ class Editor {
   async Init(option: Partial<EditorOptions>) {
     await this._editorInit(option)
     this.toolbarButton = [
-      {name : 'source', tooltip: "소스보기", icon : '<i class="ri-code-s-slash-line"></i>'},
-      {name : 'separator'},
+      // {name : 'source', tooltip: "소스보기", icon : '<i class="ri-code-s-slash-line"></i>'},
+      // {name : 'separator'},
       {name : 'bold', tooltip: "굵게", icon: '<i class="ri-bold"></i>', func : "toggleBold" },
       {name : 'italic', tooltip : "기울임", icon: '<i class="ri-italic"></i>', func : "toggleItalic"},
       {name : 'underline', tooltip : "밑줄", icon: '<i class="ri-underline"></i>', func : "toggleUnderline"},
@@ -281,6 +285,7 @@ class Editor {
         if((this.tiptap.view.dom as HTMLElement).style.visibility !== "hidden") {
           this.source.style.visibility = "visible";
           (this.tiptap.view.dom as HTMLElement).style.visibility = "hidden";
+          console.log(this.tiptap.getJSON())
           this.source.value = this.tiptap.getHTML();
           this.source.focus();
         } else {
@@ -288,7 +293,8 @@ class Editor {
           this.source.style.visibility = "hidden";
           (this.tiptap.view.dom as HTMLElement).style.visibility = "visible";
           console.log(this.source.value);
-          this.tiptap.chain().setContent(this.source.value).focus().run();
+          this.tiptap.commands.setContent(this.source.value);
+          this.tiptap.chain().focus();
         }
         // this.tiptap.destroy();
       }, false)
@@ -387,13 +393,13 @@ class Editor {
         popup.innerHTML = [
           `<div class="popup-content popup-child">`,
             `<div class="popup-input popup-child">`,
-              `<div class="popup-child">`,
+              `<div class="popup-child table-row-input">`,
                 `<label class="popup-child"> 행 </label>`,
-                `<input type="number" autocomplete="off" class="popup-child" name="row" placeholder="행" />`,
+                `<input type="number" value="3"  min="1" autocomplete="off" class="popup-child" name="row" placeholder="행" />`,
               `</div>`,
-              `<div>`,
+              `<div class="popup-child table-col-input">`,
                 `<label class="class="popup-child"> 열 </label>`,
-                `<input type="number" autocomplete="off" class="popup-child" name="col" placeholder="열" />`,
+                `<input type="number" value="3" min="1" autocomplete="off" class="popup-child" name="col" placeholder="열" />`,
               `</div>`,
             `</div>`,
             `<div class="popup-button popup-child">`,
@@ -401,7 +407,12 @@ class Editor {
             `</div>`,
           `</div>`
         ].join('');
-       
+        popup.querySelector('.confirm').addEventListener('click', (e)=>{
+          const row = (popup.querySelector(`input[name=row]`) as HTMLInputElement).value;
+          const col = (popup.querySelector(`input[name=col]`) as HTMLInputElement).value;
+          this.tiptap.chain().insertTable({ rows: parseInt(row), cols: parseInt(col), withHeaderRow: true }).focus().run();
+          this.PopupClose();
+        })
         // button.appendChild(popup);
         this.Popup({
           parent : button,
@@ -662,7 +673,13 @@ class Editor {
 (function () {
   new Editor({
     element: document.querySelector("#container"),
-    content: `<img src="https://i.ytimg.com/vi/-6Zjub7CH4k/hqdefault.jpg" /><p>Hello World!</p><p><strong>ere</strong></p><pre><code class="language-javascript">console.log('test')</code></pre>`,
+    content: `<pre><code class="language-mermaid">
+    flowchart TD
+        A[Start] --> B{Is it?};
+        B -- Yes --> C[OK];
+        C --> D[Rethink];
+        D --> B;
+        B -- No ----> E[End];</code></pre><img src="https://i.ytimg.com/vi/-6Zjub7CH4k/hqdefault.jpg" />`,
     editorProps : {
       attributes : {
         class:"editor-body",
