@@ -1,7 +1,7 @@
 import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
 import { Node, NodeView, NodeViewProps, NodeViewRendererProps } from "@tiptap/core"
 import lowlight from "lowlight";
-
+import mermaid from "mermaid";
 export enum MODE {
   PREVIEW,
   EDIT
@@ -18,13 +18,30 @@ export const CustomBlockExtension = CodeBlockLowlight
           decorations : decorations,
           extension : extension
         }
-        const CustomNode = new NodeView(editor, props);
-        console.log(CustomNode);
-        const dom = document.createElement('div')
-        console.log(editor, node, extension);
-        dom.innerHTML = 'Hello, I’m a node view!'
-        return {
-          dom,
+        const CustomNode = new NodeView("<div> asdf </div>", props);
+        CustomNode.mount();
+        if(node.attrs.language === "mermaid") {
+          const dom = document.createElement('div');
+          const wrapper = document.createElement('div');
+          console.log(editor, node, extension, CustomNode);
+          // dom.contentEditable = "true";
+          console.log(node.content.toString().replace(/\\t/g, ''))
+          dom.textContent = /\<\"((.|\n)*)\"\>/.exec(node.content.toString())[1].replace(/\\n/g, '\n')
+          dom.className = "mermaid";
+          mermaid.initialize({startOnLoad:true});
+          dom.dataset.dataNodeViewContent = "";
+          wrapper.dataset.dataNodeViewWrapper="";
+          console.log('element', CustomNode.node);
+          wrapper.append(CustomNode.dom);
+          return {
+            dom : wrapper,
+            contentDOM : dom,
+          }
+        } else {
+          return {
+            dom : CustomNode.mount(),
+            contentDOM : CustomNode
+          }
         }
       }
     },
@@ -37,7 +54,7 @@ export const CustomBlockExtension = CodeBlockLowlight
           default: null
         },
         id: {
-          default: 'content',
+          // default: 'content',
         }
       }
     },

@@ -674,12 +674,15 @@ class Editor {
   new Editor({
     element: document.querySelector("#container"),
     content: `<pre><code class="language-mermaid">
-    flowchart TD
-        A[Start] --> B{Is it?};
-        B -- Yes --> C[OK];
-        C --> D[Rethink];
-        D --> B;
-        B -- No ----> E[End];</code></pre><img src="https://i.ytimg.com/vi/-6Zjub7CH4k/hqdefault.jpg" />`,
+flowchart TD
+A[Start] --> B{Is it?};
+B -- Yes --> C[OK];
+C --> D[Rethink];
+D --> B;
+B -- No ----> E[End];</code></pre>
+<pre><code class="language-javascript">console.log('asdf');</code></pre>
+<img src="https://i.ytimg.com/vi/-6Zjub7CH4k/hqdefault.jpg" />
+    `,
     editorProps : {
       attributes : {
         class:"editor-body",
