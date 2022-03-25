@@ -568,3 +568,54 @@ ul[data-type=taskList]{margin:0;padding:0;border:0;}
   background: var(--toolbar-border-top-color);
   border-radius: 10px;
 }
+svg[id^="m"][width][height][viewBox] {
+  max-width: 95%;
+  max-height: 95%;
+}
+
+div.mermaid {
+  margin-left: 0 !important;
+  text-align: center;
+  resize:both;
+  overflow:auto;
+  margin-bottom: 2px;
+  position:relative;
+  max-height: 600px;
+  max-width: 100%;
+}
+/* 
+div.mermaid::after {
+  content:'';
+  display:block;
+  width:10px;
+  height:10px;
+  background-color:yellowgreen;
+  position:absolute;
+  right:0;
+  bottom:0;
+} */
+.hidden{display:none}
+.mermaid-editor-btn-group button:hover{
+  background: var(--toolbar-button-hover-color);
+  transition: ease-in .2s; 
+}
+.mermaid-editor-btn-group button.active{
+  border-bottom:2px solid var(--toolbar-active-color);
+}
+.mermaid-editor-btn-group button{
+  border:0;
+  background:transparent;
+  width: 38px;
+  position: relative;
+  height: 38px;
+  padding: 0;
+  box-sizing: border-box;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  z-index: 1000;
+  margin: 0 2px;
+}
+.mermaid-editor-btn-group {
+
+}
