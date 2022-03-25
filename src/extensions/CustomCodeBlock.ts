@@ -1,5 +1,5 @@
 import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
-import { Node, NodeView, NodeViewProps, NodeViewRendererProps, Editor, NodeViewRendererOptions, getSchema } from "@tiptap/core"
+import { Node, NodeView, NodeViewProps, NodeViewRendererProps, Editor, NodeViewRendererOptions, getSchema, NodeViewRenderer } from "@tiptap/core"
 import { Decoration, NodeView as ProseMirrorNodeView} from 'prosemirror-view'
 import lowlight from "lowlight";
 import mermaid from "mermaid";
@@ -9,6 +9,10 @@ export enum MODE {
   PREVIEW,
   EDIT
 }
+mermaid.initialize({
+  startOnLoad:true,
+  htmlLabels:true,
+});
 export const CustomBlockExtension = CodeBlockLowlight
   .extend({
     addNodeView() {
@@ -21,23 +25,8 @@ export const CustomBlockExtension = CodeBlockLowlight
           decorations : decorations,
           extension : extension
         }
-        // const CustomNode = new NodeView("<div>무야호</div>", props);
+        
         if(node.attrs.language === "mermaid") {
-          // const dom = document.createElement('div');
-          // const wrapper = document.createElement('div');
-          // console.log(extension);
-          // // dom.contentEditable = "true";
-          // dom.textContent = /\<\"((.|\n)*)\"\>/.exec(node.content.toString())[1].replace(/\\n/g, '\n')
-          // dom.className = "mermaid";
-          // mermaid.initialize({
-          //   startOnLoad:true,
-          //   htmlLabels:true,
-          // });
-          // // dom.dataset.dataNodeViewContent = "";
-          // // wrapper.dataset.dataNodeViewWrapper = "";
-          // // console.log('element', CustomNode.node);
-          // // wrapper.append(CustomNode.dom);
-          // wrapper.appendChild(dom);
           const dom = document.createElement('div');
           dom.classList.add('mermaid-editor-btn-group');
 
@@ -58,12 +47,14 @@ export const CustomBlockExtension = CodeBlockLowlight
           const code = document.createElement('code');
           code.classList.add(`language-${node.attrs.language}`)
           
-          console.log(node.attrs);
+          // console.log(node.attrs);
           if(node.attrs.source === "hidden") {
             pre.classList.add("hidden");
           }
           pre.setAttribute("language", "mermaid");
-          code.classList.add('mermaid');
+          code.dataset.nodeViewContent = "";
+          pre.dataset.nodeViewWrapper = "";
+          // code.classList.add('mermaid');
           pre.append(code)
 
           const content = document.createElement('code');
@@ -73,12 +64,21 @@ export const CustomBlockExtension = CodeBlockLowlight
           // content.innerHTML = /\<\"((.|\n)*)\"\>/.exec(node.content.toString())[1].replace(/\\n/g, '\n')
           content.textContent = /\<\"((.|\n)*)\"\>/.exec(node.content.toString())[1].replace(/\\n/g, '\n')
           content.classList.add("mermaid");
-          (window as any).mermaid = mermaid;
+         
+          // (window as any).mermaid = mermaid;
           if(node.attrs.content === "hidden") {
             content.classList.add("hidden");
-          }else {
+          } else {
+            try {
+              // console.log(node.textContent);
+              // content.innerHTML = mermaid.render(`mermaid-${Date.now()}`, node.textContent, () => {}, content);
+            } catch (e) {
+              console.log(e);
+            }
           }
           dom.append(source, preview, pre, content);
+
+          
           source.addEventListener('click', (e)=>{
             if(node.attrs.source === "hidden") {
               node.attrs.source = "";
@@ -91,16 +91,32 @@ export const CustomBlockExtension = CodeBlockLowlight
           
           
           preview.addEventListener('click', (e)=>{
+            // updateAttributes({content : ""})
             node.attrs.content = "";
             content.classList.remove('hidden');
-          })
-          mermaid.initialize({
-            startOnLoad:true,
-            htmlLabels:true,
           });
+          const CustomNode = new NodeView(dom, props);
+
           return {
-            dom : dom,
-            // contentDOM : code,
+            dom : CustomNode.dom,
+            contentDOM : CustomNode.contentDOM,
+            update(node, decorations, innerDecorations) {
+              // content.innerHTML = mermaid.render(`mermaid-${Date.now()}`, node.textContent, () => {}, content);
+              // console.log('update' , node, decorations, innerDecorations)
+            },
+            destroy() {
+              // console.log('destory');
+              // content.innerHTML = mermaid.render(`mermaid-${Date.now()}`, node.textContent, () => {}, content);
+            },
+            stopEvent(e) {
+              // console.log('stopEvent', e)
+            },
+            selectNode() {
+              // console.log('selectNode')
+            },
+            deselectNode() {
+              // console.log('deSelectNode')
+            }
           }
         } else {
           // return {
