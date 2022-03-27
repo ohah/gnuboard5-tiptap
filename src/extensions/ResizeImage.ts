@@ -1,8 +1,7 @@
-import {
-  Node,
-  nodeInputRule,
-  mergeAttributes,
-} from '@tiptap/core'
+import { Node, nodeInputRule, mergeAttributes, NodeViewRendererProps } from '@tiptap/core'
+import { ImageResizeNodeView } from './ResizeNode'
+import { NodeView as ProsemirrorNode, Decoration, DecorationSet } from "prosemirror-view";
+
 
 export interface ImageOptions {
   inline: boolean,
@@ -35,65 +34,26 @@ export const Image = Node.create<ImageOptions>({
   },
 
   addNodeView() {
-    return ({HTMLAttributes, node}) => {
-      const controlBar = [
-        {element : document.createElement('div'), name : 'lt', x : true, y : true},
-        {element : document.createElement('div'), name : 'ct', x : false, y : true},
-        {element : document.createElement('div'), name : 'rt', x : true, y : true},
-        {element : document.createElement('div'), name : 'rc', x : true, y : false},
-        {element : document.createElement('div'), name : 'rb', x : true, y : true},
-        {element : document.createElement('div'), name : 'cb', x : false, y : true},
-        {element : document.createElement('div'), name : 'lb', x : true, y : true},
-        {element : document.createElement('div'), name : 'lc', x : true, y : false},
-      ]
-      const { height, width, src } = mergeAttributes(HTMLAttributes, this.options.HTMLAttributes);
-      const container = document.createElement('div');
-      container.setAttribute("style", `height:${height}px;width:${width}px;`);
-      container.addEventListener('click', (e)=>{
-        container.className = "drag-image-resize";
-        controlBar.map((row)=>{
-          row.element = row.element.cloneNode(true) as HTMLDivElement;
-          const resize = row.element;
-          resize.className = `dir-circle dir-${row.name}`;
-          resize.addEventListener("drag", (e:MouseEvent)=>{
-            if(row.x === true) {
-              container.style.width = `${e.x}px`;
-              img.style.width = `${e.x}px`;
-              HTMLAttributes.width = e.x;
-              this.options.HTMLAttributes.width = e.x;
-              node.attrs.width = e.x;
-            }
-            if(row.y) {
-              container.style.height = `${e.y}px`;
-              img.style.height = `${e.y}px`;
-              HTMLAttributes.height = e.y;
-              this.options.HTMLAttributes.height = e.y;
-              node.attrs.height = e.y;
-            }
-          },false)
-            // container.append(resize);
-          container.append(row.element);
-        })
-      })
-      const img = document.createElement('img');
-      
-      img.setAttribute("style", `height:${height}px;width:${width}px;`);
-      img.setAttribute("src", src);
-      container.append(img);
+    return ({ editor, node, getPos, HTMLAttributes, decorations, extension }) => {
+      const props:NodeViewRendererProps = {
+        editor : editor,
+        node : node,
+        getPos : getPos, 
+        HTMLAttributes : HTMLAttributes,
+        decorations : decorations, 
+        extension : extension,
+      }
+      const NodeView = new ImageResizeNodeView("", props)
       return {
-        dom: container,
+        dom : NodeView.dom,
       }
     }
   },
  
   onTransaction() {
-    const container = this.editor.view.dom.querySelector('.drag-image-resize');
+    const container = this.editor.view.dom.querySelector('.resizable');
     if(container) {
-      container.className = "";
-      const dragOptions = this.editor.view.dom.querySelectorAll(".dir-circle");
-      dragOptions.forEach(element => {
-        container.removeChild(element);  
-      });
+      container.classList.remove("resizable");
     }
   },
   inline() {
@@ -104,7 +64,7 @@ export const Image = Node.create<ImageOptions>({
     return this.options.inline ? 'inline' : 'block'
   },
 
-  draggable: true,
+  // draggable: true,
 
   addAttributes() {
     return {
@@ -118,10 +78,10 @@ export const Image = Node.create<ImageOptions>({
         default: null,
       },
       width : {
-        default : 300
+        default : null
       },
       height : {
-        default : 300
+        default : null
       }
     }
   },

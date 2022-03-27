@@ -179,8 +179,8 @@ class Editor {
   async Init(option: Partial<EditorOptions>) {
     await this._editorInit(option)
     this.toolbarButton = [
-      // {name : 'source', tooltip: "소스보기", icon : '<i class="ri-code-s-slash-line"></i>'},
-      // {name : 'separator'},
+      {name : 'source', tooltip: "소스보기", icon : '<i class="ri-code-s-slash-line"></i>'},
+      {name : 'separator'},
       {name : 'bold', tooltip: "굵게", icon: '<i class="ri-bold"></i>', func : "toggleBold" },
       {name : 'italic', tooltip : "기울임", icon: '<i class="ri-italic"></i>', func : "toggleItalic"},
       {name : 'underline', tooltip : "밑줄", icon: '<i class="ri-underline"></i>', func : "toggleUnderline"},
@@ -206,7 +206,8 @@ class Editor {
         }
       })
     })
-    this.tiptap.on("update",({editor, transaction})=>{      
+    this.tiptap.on("update",({editor, transaction})=>{
+      this.source.value = this.tiptap.getHTML();
       this.toolbarButton.forEach((toolbar)=>{
         if(editor.isActive(toolbar.name) === true) {
           toolbar.button.classList.add('is-active');
@@ -286,15 +287,15 @@ class Editor {
           this.source.style.visibility = "visible";
           (this.tiptap.view.dom as HTMLElement).style.visibility = "hidden";
           console.log(this.tiptap.getJSON())
-          this.source.value = this.tiptap.getHTML();
-          this.source.focus();
+          // this.source.value = this.tiptap.getHTML();
+          // this.source.focus();
         } else {
           // this.tiptap.commands.setContent(this.source.value);
           this.source.style.visibility = "hidden";
           (this.tiptap.view.dom as HTMLElement).style.visibility = "visible";
           console.log(this.source.value);
-          this.tiptap.commands.setContent(this.source.value);
-          this.tiptap.chain().focus();
+          // this.tiptap.commands.setContent(this.source.value);
+          // this.tiptap.chain().focus();
         }
         // this.tiptap.destroy();
       }, false)
@@ -643,7 +644,6 @@ class Editor {
    */
   private Popup ({parent, content, width}:{parent:Element, content:Element | string, width:number}) {
     const { top, left, height} = parent.getBoundingClientRect();
-    console.log('실행');
     this.popup.innerHTML = '';
     if(typeof content === 'string') {
       this.popup.innerHTML = content;
@@ -656,6 +656,12 @@ class Editor {
     this.popup.style.height = `auto`;
     // this.popup.style.display = "block";
     this.toolbar.appendChild(this.popup);
+    const { left : popup_left, right : popup_right } = this.popup.getBoundingClientRect();
+    // if(popup_right > window.innerWidth)
+    if(popup_left < 0 || popup_right > window.innerWidth) {
+      this.popup.style.left = `10px`;
+    }
+
   }
 
   /**
@@ -671,9 +677,13 @@ class Editor {
 }
 
 (function () {
-  new Editor({
+  (window as any).t = new Editor({
     element: document.querySelector("#container"),
-    content: `<pre><code class="language-mermaid">flowchart TD
+    // content: `<pre><code class="language-katex">시발</code></pre>
+    // <img src="https://i.ytimg.com/vi/-6Zjub7CH4k/hqdefault.jpg" />`,
+    content: `<img src="https://i.ytimg.com/vi/-6Zjub7CH4k/hqdefault.jpg" />
+<pre><code class="language-katex">c = \\pm\\sqrt{a^2 + b^2}</code></pre>
+<pre><code class="language-mermaid">flowchart TD
 A[Start] --> B{Is it?};
 B -- Yes --> C[OK];
 C --> D[Rethink];
@@ -689,6 +699,13 @@ C -->|Three| F[Cars]</code></pre>
 <pre><code class="language-javascript">console.log('asdf');</code></pre>
 <img src="https://i.ytimg.com/vi/-6Zjub7CH4k/hqdefault.jpg" />
     `,
+//     content : `<pre><code class="language-mermaid">flowchart TD
+// A[Start] --> B{Is it?};
+// B -- Yes --> C[OK];
+// C --> D[Rethink];
+// D --> B;
+// B -- No ----> E[End];</code></pre>`,
+    // content : `<pre><code class="language-javascript">const a = "b";</code></pre>`,
     editorProps : {
       attributes : {
         class:"editor-body",

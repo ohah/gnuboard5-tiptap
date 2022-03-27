@@ -1,18 +1,23 @@
+
+import { NodeView, NodeViewRendererOptions, NodeViewRendererProps, NodeViewRenderer } from "@tiptap/core";
 import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
-import { Node, NodeView, NodeViewProps, NodeViewRendererProps, Editor, NodeViewRendererOptions, getSchema, NodeViewRenderer } from "@tiptap/core"
-import { Decoration, NodeView as ProseMirrorNodeView} from 'prosemirror-view'
 import lowlight from "lowlight";
 import mermaid from "mermaid";
-class PureNodeView extends NodeView<any, Editor, NodeViewRendererOptions> {
+import { CodeBlockOptionsView } from "./CodeBlockOptionsView";
+import { KatexNodeView } from "./KatexCodeBlock";
+import { MermaidNodeView } from "./MermaidNodeView";
+
+/**
+ * 미리보기만 보일 때 커서나 포커스가 이동하면, MULTIVIEW로 자동 변경 기능을 나중에 추가할것
+ */
+export enum EDITABLE {
+  /** 코드만 */
+  CODE = "CODE",
+  /** 미리보기 */
+  PREVIEW =  "PREVIEW",
+  /** 동시에 */
+  MULTIVIEW = "MULTIEVIEW",
 }
-export enum MODE {
-  PREVIEW,
-  EDIT
-}
-mermaid.initialize({
-  startOnLoad:true,
-  htmlLabels:true,
-});
 export const CustomBlockExtension = CodeBlockLowlight
   .extend({
     addNodeView() {
@@ -20,135 +25,40 @@ export const CustomBlockExtension = CodeBlockLowlight
         const props:NodeViewRendererProps = {
           editor : editor,
           node : node,
-          getPos : getPos,
+          getPos : getPos, 
           HTMLAttributes : HTMLAttributes,
-          decorations : decorations,
-          extension : extension
+          decorations : decorations, 
+          extension : extension,
         }
-        
-        if(node.attrs.language === "mermaid") {
-          const dom = document.createElement('div');
-          dom.classList.add('mermaid-editor-btn-group');
-
-          const source = document.createElement('button');
-
-          source.classList.add('source');
-          source.innerHTML = `<i class="ri-code-s-slash-line"></i>`;
-          source.contentEditable = "false";
-
-          const preview = document.createElement('button');
-
-          preview.classList.add('preview');
-          preview.innerHTML = `<i class="ri-organization-chart"></i>`;
-          preview.contentEditable = "false";
-
-          const pre = document.createElement('pre');
-          pre.style.marginTop = "0"
-          const code = document.createElement('code');
-          code.classList.add(`language-${node.attrs.language}`)
-          
-          // console.log(node.attrs);
-          if(node.attrs.source === "hidden") {
-            pre.classList.add("hidden");
-          }
-          pre.setAttribute("language", "mermaid");
-          code.dataset.nodeViewContent = "";
-          pre.dataset.nodeViewWrapper = "";
-          // code.classList.add('mermaid');
-          pre.append(code)
-
-          const content = document.createElement('code');
-          content.setAttribute("language", "mermaid");
-          content.classList.add('content');
-          content.classList.add(`language-${node.attrs.language}`)
-          // content.innerHTML = /\<\"((.|\n)*)\"\>/.exec(node.content.toString())[1].replace(/\\n/g, '\n')
-          content.textContent = /\<\"((.|\n)*)\"\>/.exec(node.content.toString())[1].replace(/\\n/g, '\n')
-          content.classList.add("mermaid");
-         
-          // (window as any).mermaid = mermaid;
-          if(node.attrs.content === "hidden") {
-            content.classList.add("hidden");
-          } else {
-            try {
-              // console.log(node.textContent);
-              // content.innerHTML = mermaid.render(`mermaid-${Date.now()}`, node.textContent, () => {}, content);
-            } catch (e) {
-              console.log(e);
-            }
-          }
-          dom.append(source, preview, pre, content);
-
-          
-          source.addEventListener('click', (e)=>{
-            if(node.attrs.source === "hidden") {
-              node.attrs.source = "";
-              pre.classList.remove('hidden');
-            } else {
-              node.attrs.source = "hidden";
-              pre.classList.add('hidden');
-            }
-          });
-          
-          
-          preview.addEventListener('click', (e)=>{
-            // updateAttributes({content : ""})
-            node.attrs.content = "";
-            content.classList.remove('hidden');
-          });
-          const CustomNode = new NodeView(dom, props);
-
+        if(node.attrs.language === "katex") {
+          const NodeView = new KatexNodeView("", props);
           return {
-            dom : CustomNode.dom,
-            contentDOM : CustomNode.contentDOM,
-            update(node, decorations, innerDecorations) {
-              // content.innerHTML = mermaid.render(`mermaid-${Date.now()}`, node.textContent, () => {}, content);
-              // console.log('update' , node, decorations, innerDecorations)
-            },
-            destroy() {
-              // console.log('destory');
-              // content.innerHTML = mermaid.render(`mermaid-${Date.now()}`, node.textContent, () => {}, content);
-            },
-            stopEvent(e) {
-              // console.log('stopEvent', e)
-            },
-            selectNode() {
-              // console.log('selectNode')
-            },
-            deselectNode() {
-              // console.log('deSelectNode')
-            }
-          }
+            dom : NodeView.dom,
+            contentDOM : NodeView.contentDOM,
+          }          
+        } else if(node.attrs.language === "mermaid") {    
+          const NodeView = new MermaidNodeView("", props);
+          return {
+            dom : NodeView.dom,
+            contentDOM : NodeView.contentDOM,
+          }          
         } else {
-          // return {
-          //   dom : CustomNode.mount(),
-          //   contentDOM : CustomNode
-          // }
+          const NodeView = new CodeBlockOptionsView("", props);
+          return {
+            dom : NodeView.dom,
+            contentDOM : NodeView.contentDOM,
+          }
         }
       }
     },
     addAttributes() {
       return {
-        mode: {
-          default: MODE.EDIT,
-        },
         language: {
           default: null
         },
-        class : {
-          default : "",
+        editable : {
+          default : EDITABLE.MULTIVIEW
         },
-        source : {
-          default : ""
-        },
-        preview : {
-          default : ""
-        },
-        content : {
-          default : "",
-        },
-        id: {
-          // default: 'content',
-        }
       }
     },
   })

@@ -4,5 +4,6 @@
     "moduleResolution": "Node",
     "esModuleInterop": true,
     "sourceMap": true,
+    "target": "ES6"
   }
 }
