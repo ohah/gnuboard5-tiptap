@@ -11,7 +11,6 @@ import TableRow from '@tiptap/extension-table-row'
 import TableCell from '@tiptap/extension-table-cell'
 import TableHeader from '@tiptap/extension-table-header'
 import Gapcursor from '@tiptap/extension-gapcursor'
-// import Image from '@tiptap/extension-image'
 import Dropcursor from '@tiptap/extension-dropcursor'
 import TaskList from '@tiptap/extension-task-list'
 import TaskItem from '@tiptap/extension-task-item'
@@ -19,7 +18,6 @@ import CharacterCount from '@tiptap/extension-character-count'
 import Placeholder from '@tiptap/extension-placeholder'
 import Italic from '@tiptap/extension-italic'
 import Link from '@tiptap/extension-link'
-import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
 import Bold from '@tiptap/extension-bold'
 import Code from '@tiptap/extension-code'
 import Blockquote from '@tiptap/extension-blockquote'
@@ -33,7 +31,6 @@ import { Color } from '@tiptap/extension-color'
 import TextStyle from '@tiptap/extension-text-style'
 import HardBreak from '@tiptap/extension-hard-break'
 import History from '@tiptap/extension-history';
-import lowlight from 'lowlight'
 import "remixicon/fonts/remixicon.css";
 import Image from './extensions/ResizeImage'
 import Iframe from "./extensions/Iframe";
@@ -61,7 +58,7 @@ interface editorOptions extends Partial<EditorOptions>{
   ImageUpload? : (e:FileList) => Promise<any> | undefined
 }
 
-class Editor {
+export default class Editor {
   private tiptap: Tiptap;
   private toolbar: HTMLElement;
   private wrapper: Element;
@@ -196,6 +193,8 @@ class Editor {
       {name : 'orderedList',  tooltip : "목록(번호)", icon: '<i class="ri-list-ordered"></i>', func : "toggleOrderedList"},
       {name : 'taskList',  tooltip : "목록(체크)", icon: '<i class="ri-task-line"></i>', func : "toggleTaskList"},
       {name : 'justify',  tooltip : "정렬", icon: '<i class="ri-align-justify"></i>'},
+      {name : 'separator'},
+      {name : 'help', tooltip : '도움말', icon: '<i class="ri-question-line"></i>'}
     ]
     this.tiptap.on("selectionUpdate",({editor, transaction})=>{
       this.toolbarButton.forEach((toolbar)=>{
@@ -271,6 +270,36 @@ class Editor {
         // this.tiptap.chain().focus().setTextAlign('center').run()
       });
       button.appendChild(dropdown);
+      return button;
+    } else if(name === "help") {
+      console.log('help');
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.dataset.tooltip = tooltip ? tooltip : ""
+      button.tabIndex = -1;
+      button.innerHTML = icon;
+      const popup = document.createElement('div');
+      popup.className = "popup-content help-popup";
+      // popup.dataset.popup = 'help';
+      // popup.style.width = "300px";
+      popup.innerHTML = [
+        `<div class="popup-content popup-child">`,
+          `<div class="popup-help popup-child">`,
+            `<div>Made by Ohah</div>`,
+            `<div>Ver 0.1</div>`,
+            `<div>Use by <a href="https://github.com/ueberdosis/tiptap"> titap </a> </div>`,
+          `</div>`,
+        `</div>`
+      ].join('');
+      button.addEventListener("click", (e)=>{
+        e.stopPropagation();
+        e.preventDefault();
+        this.Popup({
+          parent : button,
+          content : popup,
+          width : 150,
+        });
+      }, false);
       return button;
     } else if(name === "source") {
       const button = document.createElement('button');
@@ -628,7 +657,7 @@ class Editor {
     } else {
       const button = document.createElement('button');
       button.type = 'button';
-      button.dataset.tooltip = tooltip ? "tooltip" : ""
+      button.dataset.tooltip = tooltip ? tooltip : ""
       button.tabIndex = -1;
       button.innerHTML = icon;
       return button;
@@ -650,18 +679,18 @@ class Editor {
     } else {
       this.popup.appendChild(content);
     }
-    this.popup.style.top = `${top + height}px`;
-    this.popup.style.left = `${left - (width / 2) + 17}px`;
+    this.popup.style.top = `${height}px`;
+    this.popup.style.left = `${left - (width / 2) + 9}px`;
     this.popup.style.width = `${width}px`;
     this.popup.style.height = `auto`;
     // this.popup.style.display = "block";
     this.toolbar.appendChild(this.popup);
     const { left : popup_left, right : popup_right } = this.popup.getBoundingClientRect();
+    console.log(this.popup.getBoundingClientRect());
     // if(popup_right > window.innerWidth)
     if(popup_left < 0 || popup_right > window.innerWidth) {
-      this.popup.style.left = `10px`;
+      this.popup.style.left = `${(popup_right - popup_left) + width / 2 - 20}px`;
     }
-
   }
 
   /**
@@ -676,46 +705,46 @@ class Editor {
   }
 }
 
-(function () {
-  (window as any).t = new Editor({
-    element: document.querySelector("#container"),
-    // content: `<pre><code class="language-katex">시발</code></pre>
-    // <img src="https://i.ytimg.com/vi/-6Zjub7CH4k/hqdefault.jpg" />`,
-    content: `<img src="https://i.ytimg.com/vi/-6Zjub7CH4k/hqdefault.jpg" />
-<pre><code class="language-katex">c = \\pm\\sqrt{a^2 + b^2}</code></pre>
-<pre><code class="language-mermaid">flowchart TD
-A[Start] --> B{Is it?};
-B -- Yes --> C[OK];
-C --> D[Rethink];
-D --> B;
-B -- No ----> E[End];</code></pre>
-<pre><code class="language-javascript">console.log('asdf');</code></pre>
-<pre><code class="language-mermaid">graph TD
-A[Christmas] -->|Get money| B(Go shopping)
-B --> C{Let me think}
-C -->|One| D[Laptop]
-C -->|Two| E[iPhonee]
-C -->|Three| F[Cars]</code></pre>
-<pre><code class="language-javascript">console.log('asdf');</code></pre>
-<img src="https://i.ytimg.com/vi/-6Zjub7CH4k/hqdefault.jpg" />
-    `,
-//     content : `<pre><code class="language-mermaid">flowchart TD
+// (function () {
+//   (window as any).t = new Editor({
+//     element: document.querySelector("#container"),
+//     // content: `<pre><code class="language-katex">시발</code></pre>
+//     // <img src="https://i.ytimg.com/vi/-6Zjub7CH4k/hqdefault.jpg" />`,
+//     content: `<img src="https://i.ytimg.com/vi/-6Zjub7CH4k/hqdefault.jpg" />
+// <pre><code class="language-katex">c = \\pm\\sqrt{a^2 + b^2}</code></pre>
+// <pre><code class="language-mermaid">flowchart TD
 // A[Start] --> B{Is it?};
 // B -- Yes --> C[OK];
 // C --> D[Rethink];
 // D --> B;
-// B -- No ----> E[End];</code></pre>`,
-    // content : `<pre><code class="language-javascript">const a = "b";</code></pre>`,
-    editorProps : {
-      attributes : {
-        class:"editor-body",
-        style : "height:800px;overflow-y:auto"
-      }
-    },
-    ImageUpload : function(files) {
-      return new Promise(function(resolve, reject) {
-        resolve({url:"https://i.ytimg.com/vi/-6Zjub7CH4k/hqdefault.jpg"});
-      });
-    }
-  });
-})();
+// B -- No ----> E[End];</code></pre>
+// <pre><code class="language-javascript">console.log('asdf');</code></pre>
+// <pre><code class="language-mermaid">graph TD
+// A[Christmas] -->|Get money| B(Go shopping)
+// B --> C{Let me think}
+// C -->|One| D[Laptop]
+// C -->|Two| E[iPhonee]
+// C -->|Three| F[Cars]</code></pre>
+// <pre><code class="language-javascript">console.log('asdf');</code></pre>
+// <img src="https://i.ytimg.com/vi/-6Zjub7CH4k/hqdefault.jpg" />
+//     `,
+// //     content : `<pre><code class="language-mermaid">flowchart TD
+// // A[Start] --> B{Is it?};
+// // B -- Yes --> C[OK];
+// // C --> D[Rethink];
+// // D --> B;
+// // B -- No ----> E[End];</code></pre>`,
+//     // content : `<pre><code class="language-javascript">const a = "b";</code></pre>`,
+//     editorProps : {
+//       attributes : {
+//         class:"editor-body",
+//         style : "height:800px;overflow-y:auto"
+//       }
+//     },
+//     ImageUpload : function(files) {
+//       return new Promise(function(resolve, reject) {
+//         resolve({url:"https://i.ytimg.com/vi/-6Zjub7CH4k/hqdefault.jpg"});
+//       });
+//     }
+//   });
+// })();

@@ -1,8 +1,7 @@
 
-import { NodeView, NodeViewRendererOptions, NodeViewRendererProps, NodeViewRenderer } from "@tiptap/core";
+import { NodeViewRendererProps } from "@tiptap/core";
 import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
 import lowlight from "lowlight";
-import mermaid from "mermaid";
 import { CodeBlockOptionsView } from "./CodeBlockOptionsView";
 import { KatexNodeView } from "./KatexCodeBlock";
 import { MermaidNodeView } from "./MermaidNodeView";

@@ -4,10 +4,11 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 const webpack = require('webpack')
 module.exports = {
   entry: "./src/index.ts", // 번들링 시작 위치
+  // entry: "./src/tiptap.ts", // 번들링 시작 위치
   output: {
     path: path.join(__dirname, "/dist"), // 번들 결과물 위치
     filename: "bundle.js",
-    library: 'tiptap',
+    library: 'TipTapEditor',
     libraryTarget: 'window',
     libraryExport: 'default'
   },

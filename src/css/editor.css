@@ -237,6 +237,7 @@
   margin:0 2px;
 }
 .tiptap-toolbar {
+  position: relative;
   border-top:5px solid var(--toolbar-border-top-color);
   box-shadow:0 1px 3px rgb(0 0 0 / 12%), 0 1px 1px 1px rgb(0 0 0 / 16%);
 }
@@ -397,6 +398,7 @@
   border:0 !important;
 }
 .tiptap-toolbar .tiptap-drag-and-drop-upload::after{
+  
   display:block;
   width:100%;
   position: absolute;
@@ -616,11 +618,13 @@ code[language="mermaid"], code[language="katex"] {
   height: 100%;
 }
 .border {
-
   position: absolute;
   cursor: e-resize;
   width: 9px;
   right: -5px;
   top: 0;
   height: 100%;
+}
+.popup-help {
+  padding:10px;;
 }
