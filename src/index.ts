@@ -232,6 +232,8 @@ export default class Editor {
       this.toolbar.appendChild(button);
       return toolbar;
     })
+    this.wrapper.setAttribute("style", `height:${this.toolbar.getBoundingClientRect().height + this.body.getBoundingClientRect().height}px;overflow:hidden;`)
+    // this.body.style.marginTop = `${this.toolbar.getBoundingClientRect().height}px`;
   }
 
   /**
@@ -287,7 +289,7 @@ export default class Editor {
           `<div class="popup-help popup-child">`,
             `<div>Made by Ohah</div>`,
             `<div>Ver 0.1</div>`,
-            `<div>Use by <a href="https://github.com/ueberdosis/tiptap"> titap </a> </div>`,
+            `<div>Use by <a href="https://github.com/ueberdosis/tiptap"> tiptap </a> </div>`,
           `</div>`,
         `</div>`
       ].join('');
