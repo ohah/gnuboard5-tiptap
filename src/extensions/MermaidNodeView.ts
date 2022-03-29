@@ -29,6 +29,7 @@ export class MermaidNodeView extends NodeView<any, Editor, NodeViewRendererOptio
     const { editor, node, getPos, decorations, updateAttributes, extension } = this;
     const languages = extension.options.lowlight.listLanguages();    
     languages.push("mermaid");
+    languages.push("katex");
     const select = document.createElement("select");
     select.classList.add("lang-select");
     select.contentEditable = "false";
@@ -131,6 +132,7 @@ export class MermaidNodeView extends NodeView<any, Editor, NodeViewRendererOptio
     this.content = content;
     
     const observer = new MutationObserver((mutations)=> {
+      console.log('옵저버쿤..');
       this.render();
     })
     observer.observe(pre, {

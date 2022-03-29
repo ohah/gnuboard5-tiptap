@@ -41,6 +41,18 @@
   color:#000;
   margin: 0 0 1px;
 }
+.tiptap-toolbar .font-family .dropdown *{
+  white-space: nowrap;
+}
+.tiptap-toolbar .font-family .dropdown [data-famliy]{
+  width:180px;
+  float:inherit;
+  float: inherit;
+  width:100%;
+  text-align: left;
+  display: block;
+  padding:0 0.5em;
+}
 .tiptap-toolbar .justify-align .dropdown i {
   margin:12px;
 }
@@ -641,4 +653,15 @@ code[language="mermaid"], code[language="katex"] {
   float: left;
   height: 0;
   pointer-events: none;
+}
+
+
+.tableWrapper {
+  padding: 1rem 0;
+  overflow-x: auto;
+}
+
+.resize-cursor {
+  cursor: ew-resize;
+  cursor: col-resize;
 }

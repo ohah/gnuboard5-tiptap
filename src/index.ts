@@ -38,6 +38,8 @@ import Image from './extensions/ResizeImage'
 import Iframe from "./extensions/Iframe";
 import FontFamily from '@tiptap/extension-font-family'
 import { CustomBlockExtension } from "./extensions/CustomCodeBlock";
+import { createMarkdownEditor } from "tiptap-markdown";
+import FloatingMenu from '@tiptap/extension-floating-menu'
 
 declare global {
   interface Window {
@@ -71,6 +73,8 @@ export default class Editor {
   private toolbarButton:Toolbar[];
   private option:editorOptions;
   private source:HTMLTextAreaElement;
+  private floatingMenu:HTMLElement;
+  private markdownEditor:createMarkdownEditor;
   constructor(option: editorOptions) {
     this.wrapper = option.element;
     this.option = option;
@@ -85,6 +89,9 @@ export default class Editor {
     this.footer.className = "tiptap-container";
     this.source = document.createElement("textarea");
     this.source.className = `tiptap-source ${option.editorProps.attributes["class"]}`;
+    this.floatingMenu = document.createElement("div");
+    this.floatingMenu.textContent = "무야호";
+    document.body.appendChild(this.floatingMenu)
     // this.source.setAttribute("style", option.editorProps.attributes["style"]);
     // this.source.style.display = "none";
     // this.body.style.display = "block";
@@ -168,17 +175,24 @@ export default class Editor {
         TableHeader,
         Image,
         Dropcursor,
+        FloatingMenu.configure({
+          element: this.floatingMenu,
+        }),
         TextAlign.configure({
           types: ['heading', 'paragraph'],
-        })
+        }),
       ],
       element: this.body,
     });
+    // this.markdownEditor = createMarkdownEditor(new Tiptap({
+    //   content: "# Title",
+    //   extensions : [Document, Paragraph, Heading, Text],
+    // }))
   }
 
   /**
    * Init 초기화
-   * @param option tiptap 옵션 그대롯 ㅏㅇ속
+   * @param option tiptap 옵션 그대로 상속
    */
   async Init(option: Partial<EditorOptions>) {
     await this._editorInit(option)
@@ -217,6 +231,7 @@ export default class Editor {
       })
     })
     this.tiptap.on("update",({editor, transaction})=>{
+      console.log(editor, transaction);
       this.source.value = this.tiptap.getHTML();
       this.toolbarButton.forEach((toolbar)=>{
         if(editor.isActive(toolbar.name) === true) {
@@ -287,7 +302,7 @@ export default class Editor {
     } else if(name === "fontfamily") {
       const button = document.createElement('button');
       button.type = 'button';
-      button.className = "justify-align"
+      button.className = "font-family"
       button.tabIndex = -1;
       button.innerHTML = [
         `${icon}`,
@@ -295,20 +310,29 @@ export default class Editor {
       const dropdown = document.createElement('div');
       dropdown.className = "dropdown";
       ['Inter', 'Comic Sans MS, Comic Sans', 'serif', 'monospace', 'cursive'].map((famliy)=>{
-        const alignBtn = document.createElement('button');
-        alignBtn.dataset.famliy = famliy;
-        alignBtn.textContent = famliy;
-        alignBtn.addEventListener('click', (e)=> {
+        const fontBtn = document.createElement('button');
+        fontBtn.style.fontFamily = famliy;
+        fontBtn.dataset.famliy = famliy;
+        fontBtn.textContent = famliy;
+        fontBtn.addEventListener('click', (e)=> {
           e.preventDefault();
           e.stopPropagation();
           this.tiptap.chain().focus().setFontFamily(famliy).run();
         }, false);
-        dropdown.appendChild(alignBtn);
-      });
-      button.addEventListener('click', (e)=>{
-        // this.tiptap.chain().focus().setTextAlign('center').run()
+        dropdown.appendChild(fontBtn);
       });
       button.appendChild(dropdown);
+      /** 사이즈 크기를 판별해야하므로 요소가 로드 후 조정해야함. */
+      window.onload = () => {
+        if(button.getBoundingClientRect().left + 17 + 180 > window.innerWidth) {
+          dropdown.style.right = `0px`;
+          dropdown.style.left = `unset`;
+        } else {
+          dropdown.style.left = `0px`;
+          dropdown.style.right = `unset`;
+        }
+        button.style.zIndex = "10001";
+      }
       return button;
     } else if(name === "help") {
       const button = document.createElement('button');
@@ -318,8 +342,6 @@ export default class Editor {
       button.innerHTML = icon;
       const popup = document.createElement('div');
       popup.className = "popup-content help-popup";
-      // popup.dataset.popup = 'help';
-      // popup.style.width = "300px";
       popup.innerHTML = [
         `<div class="popup-content popup-child">`,
           `<div class="popup-help popup-child">`,
@@ -349,22 +371,15 @@ export default class Editor {
       ].join('');
       button.addEventListener('click', (e) => {
         e.preventDefault();
-        // this.body.appendChild(this.source);
         if((this.tiptap.view.dom as HTMLElement).style.visibility !== "hidden") {
           this.source.style.visibility = "visible";
           (this.tiptap.view.dom as HTMLElement).style.visibility = "hidden";
-          console.log(this.tiptap.getJSON())
-          // this.source.value = this.tiptap.getHTML();
-          // this.source.focus();
+          // console.log(this.tiptap.getJSON())
         } else {
-          // this.tiptap.commands.setContent(this.source.value);
           this.source.style.visibility = "hidden";
           (this.tiptap.view.dom as HTMLElement).style.visibility = "visible";
-          console.log(this.source.value);
-          // this.tiptap.commands.setContent(this.source.value);
-          // this.tiptap.chain().focus();
+          // console.log(this.source.value);
         }
-        // this.tiptap.destroy();
       }, false)
       
       return button;
@@ -429,14 +444,8 @@ export default class Editor {
               return false;
             }
             this.tiptap.chain().focus().insertContent(text).run();
-          }
-          
-          // this.tiptap.chain().setLink({href:url, target : target ? "_blank" : "" }).insertContent(text).run();
-          // this.tiptap.chain().focus();
-          // this.PopupClose();
-          // console.log(e);
+          }          
         }, false)
-        // button.appendChild(popup);
         this.Popup({
           parent : button,
           content : popup,
@@ -457,7 +466,6 @@ export default class Editor {
         const popup = document.createElement('div');
         popup.className = "popup-content link-popup";
         popup.dataset.popup = 'link';
-        // popup.style.width = "300px";
         popup.innerHTML = [
           `<div class="popup-content popup-child">`,
             `<div class="popup-input popup-child">`,
@@ -503,7 +511,6 @@ export default class Editor {
         const popup = document.createElement('div');
         popup.className = "popup-content link-popup";
         popup.dataset.popup = 'link';
-        // popup.style.width = "300px";
         popup.innerHTML = [
           `<div class="popup-content popup-child">`,
             `<div class="popup-tab popup-child">`,
@@ -565,7 +572,6 @@ export default class Editor {
             this.tiptap.chain().focus().insertContent(text).run();
           }
         }, false)
-        // button.appendChild(popup);
         this.Popup({
           parent : button,
           content : popup,
@@ -624,7 +630,6 @@ export default class Editor {
           this.PopupClose();
           console.log(e);
         }, false)
-        // button.appendChild(popup);
         this.Popup({
           parent : button,
           content : popup,
@@ -724,17 +729,15 @@ export default class Editor {
     this.popup.style.left = `${left - (width / 2) + 9}px`;
     this.popup.style.width = `${width}px`;
     this.popup.style.height = `auto`;
-    // this.popup.style.display = "block";
     this.toolbar.appendChild(this.popup);
-    console.log(parent, parent.getBoundingClientRect().right, this.popup.getBoundingClientRect().right);
-    
+      
     const { left : popup_left, right : popup_right } = this.popup.getBoundingClientRect();
     span.style.left = `${left - popup_left + 19}px`;
-    console.log('popup', popup_right , window.innerWidth);
-    // if(popup_right > window.innerWidth)
+    if(width > window.innerWidth) {
+      this.popup.style.width = `${window.innerWidth - 20}px`;      
+    }
     if(popup_left < 0) {
-      // console.log('실행');  
-      this.popup.style.left = `${(popup_right - popup_left)}px`;
+      this.popup.style.left = `10px`;
     }
     if(popup_right > window.innerWidth) {
       span.style.left = "unset";

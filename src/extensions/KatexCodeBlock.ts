@@ -19,6 +19,7 @@ export class KatexNodeView extends NodeView<any, Editor, NodeViewRendererOptions
   mount() {
     const { editor, node, getPos, decorations, updateAttributes, extension } = this;
     const languages = extension.options.lowlight.listLanguages();    
+    languages.push("mermaid");
     languages.push("katex");
     const select = document.createElement("select");
     select.classList.add("lang-select");

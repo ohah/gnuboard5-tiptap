@@ -9,6 +9,7 @@ export class CodeBlockOptionsView extends NodeView<any, Editor, NodeViewRenderer
     const { editor, node, getPos, decorations, updateAttributes, extension } = this;
     const languages = extension.options.lowlight.listLanguages();
     languages.push("mermaid");
+    languages.push("katex");
     const select = document.createElement("select");
     select.contentEditable = "false";
     select.classList.add("lang-select");
@@ -23,7 +24,7 @@ export class CodeBlockOptionsView extends NodeView<any, Editor, NodeViewRenderer
     });
     select.addEventListener( "change", (e) => {
       this.updateAttributes({ language: (e.target as HTMLSelectElement).value });
-    },false);    
+    },false);
     
     const wrapper = document.createElement("div");
     wrapper.classList.add("mermaid-editor-wrapper");
