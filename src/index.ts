@@ -29,11 +29,14 @@ import ListItem from '@tiptap/extension-list-item'
 import OrderedList from '@tiptap/extension-ordered-list'
 import { Color } from '@tiptap/extension-color'
 import TextStyle from '@tiptap/extension-text-style'
+import Subscript from '@tiptap/extension-subscript'
+import SuperScript from '@tiptap/extension-superscript'
 import HardBreak from '@tiptap/extension-hard-break'
 import History from '@tiptap/extension-history';
 import "remixicon/fonts/remixicon.css";
 import Image from './extensions/ResizeImage'
 import Iframe from "./extensions/Iframe";
+import FontFamily from '@tiptap/extension-font-family'
 import { CustomBlockExtension } from "./extensions/CustomCodeBlock";
 
 declare global {
@@ -134,6 +137,9 @@ export default class Editor {
         History,
         Link,
         Iframe,
+        FontFamily,
+        SuperScript,
+        Subscript,
         HardBreak,
         Paragraph,
         Color.configure({
@@ -143,6 +149,7 @@ export default class Editor {
         Placeholder.configure({
           placeholder: ({ node }) => {
             if(node.type.name === "p") return "내용을 입력하세요";
+            return "내용을 입력하세요";
           }
         }),
         CustomBlockExtension,
@@ -183,6 +190,7 @@ export default class Editor {
       {name : 'underline', tooltip : "밑줄", icon: '<i class="ri-underline"></i>', func : "toggleUnderline"},
       {name : 'strike',  tooltip : "밑줄", icon: '<i class="ri-strikethrough"></i>', func : "toggleStrike"},
       {name : 'color',  tooltip : "글 색깔", icon: '<i class="ri-font-color"></i>', func : "setColor(e.target.value)", type : "popup"},
+      {name : 'fontfamily',  tooltip : "글꼴 스타일", icon: '<i class="ri-font-size-2"></i>'},
       {name : 'separator'},
       {name : 'link',  tooltip : "링크", icon: '<i class="ri-link"></i>'},
       {name : 'image',  tooltip : "이미지", icon: '<i class="ri-image-add-fill"></i>'},
@@ -193,6 +201,9 @@ export default class Editor {
       {name : 'orderedList',  tooltip : "목록(번호)", icon: '<i class="ri-list-ordered"></i>', func : "toggleOrderedList"},
       {name : 'taskList',  tooltip : "목록(체크)", icon: '<i class="ri-task-line"></i>', func : "toggleTaskList"},
       {name : 'justify',  tooltip : "정렬", icon: '<i class="ri-align-justify"></i>'},
+      {name : 'separator'},
+      {name : 'subscript',  tooltip : "아랫첨자", icon: '<i class="ri-subscript"></i>', func : "toggleSubscript"},
+      {name : 'superscript',  tooltip : "윗첨자", icon: '<i class="ri-superscript"></i>', func : "toggleSuperscript"},
       {name : 'separator'},
       {name : 'help', tooltip : '도움말', icon: '<i class="ri-question-line"></i>'}
     ]
@@ -273,8 +284,33 @@ export default class Editor {
       });
       button.appendChild(dropdown);
       return button;
+    } else if(name === "fontfamily") {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = "justify-align"
+      button.tabIndex = -1;
+      button.innerHTML = [
+        `${icon}`,
+      ].join('');
+      const dropdown = document.createElement('div');
+      dropdown.className = "dropdown";
+      ['Inter', 'Comic Sans MS, Comic Sans', 'serif', 'monospace', 'cursive'].map((famliy)=>{
+        const alignBtn = document.createElement('button');
+        alignBtn.dataset.famliy = famliy;
+        alignBtn.textContent = famliy;
+        alignBtn.addEventListener('click', (e)=> {
+          e.preventDefault();
+          e.stopPropagation();
+          this.tiptap.chain().focus().setFontFamily(famliy).run();
+        }, false);
+        dropdown.appendChild(alignBtn);
+      });
+      button.addEventListener('click', (e)=>{
+        // this.tiptap.chain().focus().setTextAlign('center').run()
+      });
+      button.appendChild(dropdown);
+      return button;
     } else if(name === "help") {
-      console.log('help');
       const button = document.createElement('button');
       button.type = 'button';
       button.dataset.tooltip = tooltip ? tooltip : ""
@@ -673,25 +709,38 @@ export default class Editor {
    * @param content 내용. Element, string
    * @param width : 크기 number
    */
-  private Popup ({parent, content, width}:{parent:Element, content:Element | string, width:number}) {
-    const { top, left, height} = parent.getBoundingClientRect();
+  private Popup ({parent, content, width}:{parent:Element, content:Element, width:number}) {
+    const { top, left, height, right} = parent.getBoundingClientRect();
+    const span = document.createElement('span');
+    span.classList.add("arrow");
+    content.prepend(span);
     this.popup.innerHTML = '';
     if(typeof content === 'string') {
       this.popup.innerHTML = content;
     } else {
       this.popup.appendChild(content);
     }
-    this.popup.style.top = `${height}px`;
+    this.popup.style.top = `${top + height / 2}px`;
     this.popup.style.left = `${left - (width / 2) + 9}px`;
     this.popup.style.width = `${width}px`;
     this.popup.style.height = `auto`;
     // this.popup.style.display = "block";
     this.toolbar.appendChild(this.popup);
+    console.log(parent, parent.getBoundingClientRect().right, this.popup.getBoundingClientRect().right);
+    
     const { left : popup_left, right : popup_right } = this.popup.getBoundingClientRect();
-    console.log(this.popup.getBoundingClientRect());
+    span.style.left = `${left - popup_left + 19}px`;
+    console.log('popup', popup_right , window.innerWidth);
     // if(popup_right > window.innerWidth)
-    if(popup_left < 0 || popup_right > window.innerWidth) {
-      this.popup.style.left = `${(popup_right - popup_left) + width / 2 - 20}px`;
+    if(popup_left < 0) {
+      // console.log('실행');  
+      this.popup.style.left = `${(popup_right - popup_left)}px`;
+    }
+    if(popup_right > window.innerWidth) {
+      span.style.left = "unset";
+      this.popup.style.right = `${10}px`;
+      span.style.right = `${10 - 15 - (right - window.innerWidth)}px`;
+      this.popup.style.left = `unset`;
     }
   }
 
@@ -707,46 +756,3 @@ export default class Editor {
   }
 }
 
-// (function () {
-//   (window as any).t = new Editor({
-//     element: document.querySelector("#container"),
-//     // content: `<pre><code class="language-katex">시발</code></pre>
-//     // <img src="https://i.ytimg.com/vi/-6Zjub7CH4k/hqdefault.jpg" />`,
-//     content: `<img src="https://i.ytimg.com/vi/-6Zjub7CH4k/hqdefault.jpg" />
-// <pre><code class="language-katex">c = \\pm\\sqrt{a^2 + b^2}</code></pre>
-// <pre><code class="language-mermaid">flowchart TD
-// A[Start] --> B{Is it?};
-// B -- Yes --> C[OK];
-// C --> D[Rethink];
-// D --> B;
-// B -- No ----> E[End];</code></pre>
-// <pre><code class="language-javascript">console.log('asdf');</code></pre>
-// <pre><code class="language-mermaid">graph TD
-// A[Christmas] -->|Get money| B(Go shopping)
-// B --> C{Let me think}
-// C -->|One| D[Laptop]
-// C -->|Two| E[iPhonee]
-// C -->|Three| F[Cars]</code></pre>
-// <pre><code class="language-javascript">console.log('asdf');</code></pre>
-// <img src="https://i.ytimg.com/vi/-6Zjub7CH4k/hqdefault.jpg" />
-//     `,
-// //     content : `<pre><code class="language-mermaid">flowchart TD
-// // A[Start] --> B{Is it?};
-// // B -- Yes --> C[OK];
-// // C --> D[Rethink];
-// // D --> B;
-// // B -- No ----> E[End];</code></pre>`,
-//     // content : `<pre><code class="language-javascript">const a = "b";</code></pre>`,
-//     editorProps : {
-//       attributes : {
-//         class:"editor-body",
-//         style : "height:800px;overflow-y:auto"
-//       }
-//     },
-//     ImageUpload : function(files) {
-//       return new Promise(function(resolve, reject) {
-//         resolve({url:"https://i.ytimg.com/vi/-6Zjub7CH4k/hqdefault.jpg"});
-//       });
-//     }
-//   });
-// })();

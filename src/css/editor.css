@@ -22,7 +22,6 @@
 .tiptap-separator{
   background: var(--toolbar-separator-color);
   display: block;
-  vertical-align: top;
   float:left;
   height:34px;
   width:1px;
@@ -184,7 +183,7 @@
   position: relative;
   z-index: 1;
 }
-.tiptap-toolbar .popup::before {
+.tiptap-toolbar .popup span.arrow {
   display: block;
   content:'';
   width: 0;
@@ -363,15 +362,20 @@
 [data-tooltip]:hover::before {
   content: " ";
   position: absolute;
-  top: calc(100% - 8.5px);
+  top: calc(100%);
+  width:0;
+  height:0;
   left: 50%;
   margin-left: -5px;
   border-width: 5px;
   border-style: solid;
   border-color: transparent transparent black transparent;
+  transition: all .18s ease-out .18s;
+  box-sizing: border-box;
 }
 
 [data-tooltip]:hover::after{
+  transition: all .18s ease-out .18s;
   content:attr(data-tooltip);
   display:block;
   background-color: black;
@@ -380,10 +384,12 @@
   padding: 5px 5px;
   position: absolute;
   white-space: nowrap;
+  margin-top:10px;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translate(-50%, 0);
   border-radius: 6px;
   z-index: 1001;
+  box-sizing: border-box;
 }
 .tiptap-toolbar .tiptap-drag-and-drop-upload input[type="file"] {
   cursor: pointer;
@@ -627,4 +633,12 @@ code[language="mermaid"], code[language="katex"] {
 } */
 .popup-help {
   padding:10px;;
+}
+
+.ProseMirror p.is-editor-empty:first-child::before {
+  color: #adb5bd;
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
 }

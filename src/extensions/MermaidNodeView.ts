@@ -52,7 +52,7 @@ export class MermaidNodeView extends NodeView<any, Editor, NodeViewRendererOptio
     dom.classList.add("code-block-wrapper");
 
     const source = document.createElement("button");
-
+    source.dataset.tooltip = "코드보기";
     source.classList.add("source");
     source.innerHTML = `<i class="ri-code-s-slash-line"></i>`;
     source.contentEditable = "false";
@@ -60,11 +60,12 @@ export class MermaidNodeView extends NodeView<any, Editor, NodeViewRendererOptio
     const preview = document.createElement("button");
 
     preview.classList.add("preview");
+    preview.dataset.tooltip = "미리보기";
     preview.innerHTML = `<i class="ri-organization-chart"></i>`;
     preview.contentEditable = "false";
 
     const multi = document.createElement("button");
-
+    multi.dataset.tooltip = "같이보기";
     multi.classList.add("mulit");
     multi.innerHTML = `<i class="ri-book-read-line"></i>`;
     multi.contentEditable = "false";
