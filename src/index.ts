@@ -63,6 +63,11 @@ interface editorOptions extends Partial<EditorOptions>{
   ImageUpload? : (e:FileList) => Promise<any> | undefined
 }
 
+interface Floating {
+  table? : HTMLElement,
+  paragraph? : HTMLElement,
+}
+
 export default class Editor {
   private tiptap: Tiptap;
   private toolbar: HTMLElement;
@@ -73,7 +78,10 @@ export default class Editor {
   private toolbarButton:Toolbar[];
   private option:editorOptions;
   private source:HTMLTextAreaElement;
-  private floatingMenu:HTMLElement;
+  public floating : {
+    table : HTMLElement,
+    paragraph : HTMLElement
+  };
   private markdownEditor:createMarkdownEditor;
   constructor(option: editorOptions) {
     this.wrapper = option.element;
@@ -89,9 +97,32 @@ export default class Editor {
     this.footer.className = "tiptap-container";
     this.source = document.createElement("textarea");
     this.source.className = `tiptap-source ${option.editorProps.attributes["class"]}`;
-    this.floatingMenu = document.createElement("div");
-    this.floatingMenu.textContent = "무야호";
-    document.body.appendChild(this.floatingMenu)
+    this.floating = {
+      table : document.createElement('div'),
+      paragraph : document.createElement('div')
+    };
+    this.floating.table.className = "floating-table";
+    [
+      {icon : "ri-insert-column-left", tooltip: "열 삽입(왼)", func : "addColumnBefore"},
+      {icon : "ri-insert-column-right", tooltip: "열 삽입(오)", func :"addColumnAfter"} ,
+      {icon : "ri-insert-row-top", tooltip: "행 삽입(위)", func : "addRowBefore"},
+      {icon : "ri-insert-row-bottom", tooltip: "행 삽입(아래)", func : "addRowAfter"},
+      {icon : "ri-delete-column", tooltip: "열 삭제", func : "deleteColumn"},
+      {icon : "ri-merge-cells-horizontal", tooltip: "셀 병합", func : "mergeCells"},
+      {icon : "ri-split-cells-horizontal", tooltip: "셀 나누기", func : "splitCell"},
+    ].forEach((row)=>{
+      const { icon , func, tooltip } = row;
+      const button = document.createElement("button");
+      button.type = "button";
+      button.dataset.tooltip = tooltip;
+      button.innerHTML = `<i class="${icon}"></i>`;
+      button.addEventListener("click", (e)=>{
+        window.tiptap = this.tiptap;
+        Function(`window.tiptap.chain().${func}().run()`)();
+      }, false)
+      this.floating.table.appendChild(button);
+    });
+    document.body.appendChild(this.floating.table);
     // this.source.setAttribute("style", option.editorProps.attributes["style"]);
     // this.source.style.display = "none";
     // this.body.style.display = "block";
@@ -176,7 +207,19 @@ export default class Editor {
         Image,
         Dropcursor,
         FloatingMenu.configure({
-          element: this.floatingMenu,
+          element: this.floating.table,
+          shouldShow: ({ editor, view, state, oldState }) => {
+            console.log('ya', view, state)
+            if(editor.isActive('table') === true) {
+              this.floating.table.style.display = "block";
+            } else {
+              this.floating.table.style.display = "none";
+            }
+            console.log('codeblock' ,editor.isActive('codeblock'));
+            // return true;
+            // show the floating within any paragraph
+            return editor.isActive('table')
+          },
         }),
         TextAlign.configure({
           types: ['heading', 'paragraph'],
@@ -219,6 +262,9 @@ export default class Editor {
       {name : 'subscript',  tooltip : "아랫첨자", icon: '<i class="ri-subscript"></i>', func : "toggleSubscript"},
       {name : 'superscript',  tooltip : "윗첨자", icon: '<i class="ri-superscript"></i>', func : "toggleSuperscript"},
       {name : 'separator'},
+      {name : 'superscript',  tooltip : "실행취소", icon: '<i class="ri-arrow-go-back-fill"></i>', func : "undo"},
+      {name : 'superscript',  tooltip : "되돌리기", icon: '<i class="ri-arrow-go-forward-fill"></i>', func : "redo"},
+      {name : 'separator'},
       {name : 'help', tooltip : '도움말', icon: '<i class="ri-question-line"></i>'}
     ]
     this.tiptap.on("selectionUpdate",({editor, transaction})=>{
@@ -231,7 +277,7 @@ export default class Editor {
       })
     })
     this.tiptap.on("update",({editor, transaction})=>{
-      console.log(editor, transaction);
+      // console.log(editor, transaction);
       this.source.value = this.tiptap.getHTML();
       this.toolbarButton.forEach((toolbar)=>{
         if(editor.isActive(toolbar.name) === true) {
@@ -309,7 +355,7 @@ export default class Editor {
       ].join('');
       const dropdown = document.createElement('div');
       dropdown.className = "dropdown";
-      ['Inter', 'Comic Sans MS, Comic Sans', 'serif', 'monospace', 'cursive'].map((famliy)=>{
+      ['Inter', 'Comic Sans MS, Comic Sans', 'serif', 'monospace', 'cursive', 'default'].map((famliy)=>{
         const fontBtn = document.createElement('button');
         fontBtn.style.fontFamily = famliy;
         fontBtn.dataset.famliy = famliy;
@@ -317,7 +363,11 @@ export default class Editor {
         fontBtn.addEventListener('click', (e)=> {
           e.preventDefault();
           e.stopPropagation();
-          this.tiptap.chain().focus().setFontFamily(famliy).run();
+          if(famliy === 'default') {
+            this.tiptap.chain().focus().unsetFontFamily().run();
+          } else {
+            this.tiptap.chain().focus().setFontFamily(famliy).run();
+          }
         }, false);
         dropdown.appendChild(fontBtn);
       });

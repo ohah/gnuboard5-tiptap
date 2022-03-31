@@ -665,3 +665,24 @@ code[language="mermaid"], code[language="katex"] {
   cursor: ew-resize;
   cursor: col-resize;
 }
+
+.floating-table {
+  margin-top:55px;
+  display:none;
+  border:1px solid var(--wrapper-border-color);
+  border-radius: 4px;
+}
+.floating-table button:hover {
+  background: var(--toolbar-button-hover-color);
+  transition: ease-in-out .2s;
+}
+.floating-table button {
+  background-color: var(--toolbar-background-color);
+  border:0;
+  cursor: pointer;
+  padding:0.2em 0.5em;
+  border-right:1px solid var(--wrapper-border-color)
+}
+.floating-table button:last-child{
+  border-right:0;
+}
